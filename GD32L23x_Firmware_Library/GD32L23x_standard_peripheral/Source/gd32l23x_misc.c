@@ -2,8 +2,7 @@
     \file    gd32l23x_misc.c
     \brief   MISC driver
 
-    \version 2021-08-04, V1.0.0, firmware for GD32L23x
-    \version 2021-12-09, V1.0.0, firmware for GD32L23x
+    \version 2023-06-21, V1.1.0, firmware for GD32L23x
 */
 
 /*

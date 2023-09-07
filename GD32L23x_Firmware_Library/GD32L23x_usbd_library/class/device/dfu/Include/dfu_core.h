@@ -2,11 +2,11 @@
     \file    dfu_core.h
     \brief   the header file of USB DFU device class core functions
 
-    \version 2021-08-04, V1.0.0, firmware for GD32L23x
+    \version 2023-06-21, V1.1.0, firmware for GD32L23x
 */
 
 /*
-    Copyright (c) 2021, GigaDevice Semiconductor Inc.
+    Copyright (c) 2023, GigaDevice Semiconductor Inc.
 
     Redistribution and use in source and binary forms, with or without modification,
 are permitted provided that the following conditions are met:
@@ -36,21 +36,6 @@ OF SUCH DAMAGE.
 #define __DFU_CORE_H
 
 #include "usbd_enum.h"
-
-#define flash_start             0x08000000U
-#define flash_end               0x08040000U
-
-#define OB_RDPT                 0x1ffff800U
-
-#define system_start            0x1fffd000
-#define system_end              0x1ffff80f
-
-#define otp_start               0x1fff7000
-#define otp_end                 0x1fff7200
-
-#define OB_RDPT                 0x1ffff800U
-
-#define MAL_MASK_OB             0xFFFFFF00U
 
 /* DFU class code */
 #define USB_DFU_CLASS                 0xFEU
@@ -86,10 +71,10 @@ OF SUCH DAMAGE.
 #define _BYTE3(x)                     (uint8_t)(((x) & 0xFF0000U) >> 16U)   /*!< addressing cycle 3rd byte */
 
 #define SET_POLLING_TIMEOUT(x)        do { \
-        dfu->bwPollTimeout0 = _BYTE1(x);\
-        dfu->bwPollTimeout1 = _BYTE2(x);\
-        dfu->bwPollTimeout2 = _BYTE3(x);\
-    } while(0)
+                                      dfu->bwPollTimeout0 = _BYTE1(x);\
+                                      dfu->bwPollTimeout1 = _BYTE2(x);\
+                                      dfu->bwPollTimeout2 = _BYTE3(x);\
+                                      } while(0)
 
 #define FLASH_ERASE_TIMEOUT           60U
 #define FLASH_WRITE_TIMEOUT           80U
@@ -100,7 +85,8 @@ OF SUCH DAMAGE.
 #define DFU_DESC_TYPE                 0x21U
 
 /* DFU device state enumeration */
-typedef enum {
+typedef enum
+{
     STATE_APP_IDLE = 0x00U,
     STATE_APP_DETACH,
     STATE_DFU_IDLE,
@@ -115,7 +101,8 @@ typedef enum {
 } dfu_state;
 
 /* DFU device status enumeration */
-typedef enum {
+typedef enum
+{
     STATUS_OK = 0x00U,
     STATUS_ERR_TARGET,
     STATUS_ERR_FILE,
@@ -135,7 +122,8 @@ typedef enum {
 } dfu_status;
 
 /* DFU class-specific requests enumeration */
-typedef enum {
+typedef enum 
+{
     DFU_DETACH = 0U,
     DFU_DNLOAD,
     DFU_UPLOAD,
@@ -149,25 +137,29 @@ typedef enum {
 #pragma pack(1)
 
 /* USB DFU function descriptor structure */
-typedef struct {
+typedef struct
+{
     usb_desc_header header;               /*!< descriptor header, including type and size */
     uint8_t bmAttributes;                 /*!< DFU attributes */
-    uint16_t wDetachTimeOut;              /*!< time, in milliseconds, that the device will wait after receipt of the DFU_DETACH request. If */
+    uint16_t wDetachTimeOut;              /*!< time, in milliseconds, that the device will wait after receipt of the DFU_DETACH request. */ 
     uint16_t wTransferSize;               /*!< maximum number of bytes that the device can accept per control-write transaction */
-    uint16_t bcdDFUVersion;               /*!< numeric expression identifying the version of the DFU specification release. */
+    uint16_t bcdDFUVersion;               /*!< numeric expression identifying the version of the DFU specification release */
 } usb_desc_dfu_func;
 
 #pragma pack()
 
 /* USB configuration descriptor structure */
-typedef struct {
+typedef struct
+{
     usb_desc_config           config;
-    usb_desc_itf              dfu_itf;
+    usb_desc_itf              dfu_itf0;
+    usb_desc_itf              dfu_itf1;
     usb_desc_dfu_func         dfu_func;
 } usb_dfu_desc_config_set;
 
 /* USB DFU handler structure */
-typedef struct {
+typedef struct
+{
     uint8_t bStatus;
     uint8_t bwPollTimeout0;
     uint8_t bwPollTimeout1;
@@ -176,17 +168,16 @@ typedef struct {
     uint8_t iString;
 
     uint8_t manifest_state;
-    uint16_t data_len;
+    uint32_t data_len;
     uint16_t block_num;
     uint32_t base_addr;
 
-    uint8_t buf[TRANSFER_SIZE];
+    __ALIGNED(2) uint8_t buf[TRANSFER_SIZE];
 } usbd_dfu_handler;
 
-typedef void (*app_func)(void);
+typedef void (*app_func) (void);
 
 extern usb_desc dfu_desc;
 extern usb_class dfu_class;
-static fmc_state_enum fmc_ready_wait(uint32_t timeout);
 
 #endif /* __DFU_CORE_H */

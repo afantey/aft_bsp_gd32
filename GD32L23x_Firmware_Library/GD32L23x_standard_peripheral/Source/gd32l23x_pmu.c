@@ -2,11 +2,11 @@
     \file    gd32l23x_pmu.c
     \brief   PMU driver
 
-    \version 2021-08-04, V1.0.0, firmware for GD32L23x
+    \version 2023-06-21, V1.1.0, firmware for GD32L23x
 */
 
 /*
-    Copyright (c) 2021, GigaDevice Semiconductor Inc.
+    Copyright (c) 2023, GigaDevice Semiconductor Inc.
 
     Redistribution and use in source and binary forms, with or without modification,
 are permitted provided that the following conditions are met:
@@ -40,7 +40,7 @@ OF SUCH DAMAGE.
 #define PAR_TWK_SRAM1_OFFSET               ((uint32_t)0x00000008U)               /*!< bit offset of TWK_SRAM1 in PMU_PAR */
 
 /*!
-    \brief      reset PMU
+    \brief      reset PMU registers
     \param[in]  none
     \param[out] none
     \retval     none
@@ -166,7 +166,7 @@ void pmu_low_power_disable(void)
 }
 
 /*!
-    \brief      PMU work at sleep mode
+    \brief      PMU work in Sleep mode
     \param[in]  lowdrive: low-driver mode when use normal power LDO in Run/Sleep mode.
                 only one parameter can be selected which is shown as below:
       \arg        PMU_LDNP_NORMALDRIVE: low-driver mode disable
@@ -200,7 +200,7 @@ void pmu_to_sleepmode(uint32_t lowdrive, uint8_t sleepmodecmd)
 }
 
 /*!
-    \brief      PMU work at Deep-sleep mode
+    \brief      PMU work in Deep-sleep mode
     \param[in]  lowdrive: low-driver mode when use normal power LDO in Deep-sleep mode
                 only one parameter can be selected which is shown as below:
       \arg        PMU_LDNPDSP_NORMALDRIVE: low-driver mode disable
@@ -247,7 +247,7 @@ void pmu_to_deepsleepmode(uint32_t lowdrive, uint8_t deepsleepmodecmd, uint8_t d
 }
 
 /*!
-    \brief      pmu work at standby mode
+    \brief      pmu work in standby mode
     \param[in]  standbymodecmd:
                 only one parameter can be selected which is shown as below:
       \arg        WFI_CMD: use WFI command
@@ -255,28 +255,29 @@ void pmu_to_deepsleepmode(uint32_t lowdrive, uint8_t deepsleepmodecmd, uint8_t d
     \param[out] none
     \retval     none
 */
-void pmu_to_standbymode(uint8_t standbymodecmd)
+void pmu_to_standbymode(void)
 {
-    /* set sleepdeep bit of Cortex-M23 system control register */
-    SCB->SCR |= SCB_SCR_SLEEPDEEP_Msk;
-
     /* select the low-power mode to enter */
     PMU_CTL0 |= PMU_STANDBY;
 
     /* reset wakeup flag and standby flag */
     PMU_CTL0 |= PMU_CTL0_WURST | PMU_CTL0_STBRST;
+    
+    /* set sleepdeep bit of Cortex-M23 system control register */
+    SCB->SCR |= SCB_SCR_SLEEPDEEP_Msk;
+    
+    REG32( 0xE000E010U ) &= 0x00010004U;
+    REG32( 0xE000E180U )  = 0xFFFFFFF3U;
+    REG32( 0xE000E184U )  = 0xFFFFFDFFU;
+    REG32( 0xE000E188U )  = 0xFFFFFFFFU;
 
-    /* select WFI or WFE command to enter standby mode */
-    if(WFI_CMD == standbymodecmd) {
-        __WFI();
-    } else {
-        __WFE();
-        __WFE();
-    }
+    /* select WFI command to enter standby mode */
+    __WFI();
+
 }
 
 /*!
-    \brief      enable wakeup pin
+    \brief      enable PMU wakeup pin
     \param[in]  wakeup_pin: wakeup pin
                 one or more parameters can be selected which are shown as below:
       \arg        PMU_WAKEUP_PIN0: WKUP Pin 0 (PA0)
@@ -293,7 +294,7 @@ void pmu_wakeup_pin_enable(uint32_t wakeup_pin)
 }
 
 /*!
-    \brief      disable wakeup pin
+    \brief      disable PMU wakeup pin
     \param[in]  wakeup_pin: wakeup pin
                 one or more parameters can be selected which are shown as below:
       \arg        PMU_WAKEUP_PIN0: WKUP Pin 0 (PA0)
@@ -310,7 +311,7 @@ void pmu_wakeup_pin_disable(uint32_t wakeup_pin)
 }
 
 /*!
-    \brief      enable backup domain write
+    \brief      enable write access to the registers in backup domain
     \param[in]  none
     \param[out] none
     \retval     none
@@ -321,7 +322,7 @@ void pmu_backup_write_enable(void)
 }
 
 /*!
-    \brief      disable backup domain write
+    \brief      disable write access to the registers in backup domain
     \param[in]  none
     \param[out] none
     \retval     none
@@ -481,7 +482,7 @@ void pmu_wakeuptime_deepsleep2_software_disable(void)
 }
 
 /*!
-    \brief      get PMU flag status
+    \brief      get flag state
     \param[in]  flag: PMU flags
                 only one parameter can be selected which is shown as below:
       \arg        PMU_FLAG_WAKEUP: wakeup flag
@@ -489,7 +490,6 @@ void pmu_wakeuptime_deepsleep2_software_disable(void)
       \arg        PMU_FLAG_LVD: lvd flag
       \arg        PMU_FLAG_LDOVSRF: LDO voltage select ready flag
       \arg        PMU_FLAG_NPRDY: normal-power LDO ready flag
-      \arg        PMU_FLAG_LPRDY: low-power LDO ready flag
       \arg        PMU_FLAG_SRAM1_SLEEP: SRAM1 is in sleep state flag
       \arg        PMU_FLAG_SRAM1_ACTIVE: SRAM1 is in active state flag
       \arg        PMU_FLAG_CORE1_SLEEP: COREOFF1 domain is in sleep state flag
@@ -516,7 +516,7 @@ FlagStatus pmu_flag_get(uint32_t flag)
 }
 
 /*!
-    \brief      clear PMU flag status
+    \brief      clear flag bit
     \param[in]  flag: PMU flags
                 only one parameter can be selected which is shown as below:
       \arg        PMU_FLAG_WAKEUP: wakeup flag

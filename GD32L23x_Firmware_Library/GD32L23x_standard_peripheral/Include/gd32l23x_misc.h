@@ -2,7 +2,7 @@
     \file    gd32l23x_misc.h
     \brief   definitions for the MISC
 
-    \version 2021-08-04, V1.0.0, firmware for GD32L23x
+    \version 2023-06-21, V1.1.0, firmware for GD32L23x
 */
 
 /*
@@ -46,7 +46,7 @@ OF SUCH DAMAGE.
 /* the register key mask, if you want to do the write operation, you should write 0x5FA to VECTKEY bits */
 #define NVIC_AIRCR_VECTKEY_MASK     ((uint32_t)0x05FA0000)                      /*!< NVIC VECTKEY mask */
 
-/* choose the method to enter or exit the lowpower mode */
+/* choose the method to enter or exit the low power mode */
 #define SCB_SCR_SLEEPONEXIT         ((uint8_t)0x02)                             /*!< choose the the system whether enter low power mode by exiting from ISR */
 #define SCB_SCR_SLEEPDEEP           ((uint8_t)0x04)                             /*!< choose the the system enter the DEEPSLEEP mode or SLEEP mode */
 #define SCB_SCR_SEVONPEND           ((uint8_t)0x10)                             /*!< choose the interrupt source that can wake up the lowpower mode */

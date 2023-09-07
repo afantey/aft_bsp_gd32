@@ -2,12 +2,11 @@
     \file    gd32l23x_cau_aes.c
     \brief   CAU AES driver
 
-    \version 2021-08-04, V1.0.0, firmware for GD32L23x
-    \version 2021-08-12, V1.0.1, firmware for GD32L23x
+    \version 2023-06-21, V1.1.0, firmware for GD32L23x
 */
 
 /*
-    Copyright (c) 2021, GigaDevice Semiconductor Inc.
+    Copyright (c) 2023, GigaDevice Semiconductor Inc.
 
     Redistribution and use in source and binary forms, with or without modification,
 are permitted provided that the following conditions are met:
@@ -51,7 +50,7 @@ static ErrStatus cau_aes_calculate(uint8_t *input, uint32_t in_length, uint8_t *
 /*!
     \brief      encrypt and decrypt using AES in ECB mode
     \param[in]  cau_parameter: pointer to the input structure
-                  alg_dir: algorithm dirctory
+                  alg_dir: algorithm direction
                     CAU_ENCRYPT, CAU_DECRYPT
                   key: key
                   key_size: key size in bits, must be either 128, 192 or 256
@@ -114,7 +113,7 @@ ErrStatus cau_aes_ecb(cau_parameter_struct *cau_parameter, uint8_t *output)
 /*!
     \brief      encrypt and decrypt using AES in CBC mode
     \param[in]  cau_parameter: pointer to the input structure
-                  alg_dir: algorithm dirctory
+                  alg_dir: algorithm direction
                     CAU_ENCRYPT, CAU_DECRYPT
                   key: key
                   key_size: key size in bits, must be either 128, 192 or 256
@@ -191,7 +190,7 @@ ErrStatus cau_aes_cbc(cau_parameter_struct *cau_parameter, uint8_t *output)
 /*!
     \brief      encrypt and decrypt using AES in CTR mode
     \param[in]  cau_parameter: pointer to the input structure
-                  alg_dir: algorithm dirctory
+                  alg_dir: algorithm direction
                     CAU_ENCRYPT, CAU_DECRYPT
                   key: key
                   key_size: key size in bits, must be either 128, 192 or 256
@@ -244,7 +243,7 @@ ErrStatus cau_aes_ctr(cau_parameter_struct *cau_parameter, uint8_t *output)
 /*!
     \brief      encrypt and decrypt using AES in CFB mode
     \param[in]  cau_parameter: pointer to the input structure
-                  alg_dir: algorithm dirctory
+                  alg_dir: algorithm direction
                     CAU_ENCRYPT, CAU_DECRYPT
                   key: key
                   key_size: key size in bits, must be either 128, 192 or 256
@@ -296,7 +295,7 @@ ErrStatus cau_aes_cfb(cau_parameter_struct *cau_parameter, uint8_t *output)
 /*!
     \brief      encrypt and decrypt using AES in OFB mode
     \param[in]  cau_parameter: pointer to the input structure
-                  alg_dir: algorithm dirctory
+                  alg_dir: algorithm direction
                     CAU_ENCRYPT, CAU_DECRYPT
                   key: key
                   key_size: key size in bits, must be either 128, 192 or 256
@@ -348,7 +347,7 @@ ErrStatus cau_aes_ofb(cau_parameter_struct *cau_parameter, uint8_t *output)
 /*!
     \brief      encrypt and decrypt using AES in GCM mode
     \param[in]  cau_parameter: pointer to the input structure
-                  alg_dir: algorithm dirctory
+                  alg_dir: algorithm direction
                     CAU_ENCRYPT, CAU_DECRYPT
                   key: key
                   key_size: key size in bits, must be either 128, 192 or 256
@@ -473,7 +472,7 @@ ErrStatus cau_aes_gcm(cau_parameter_struct *cau_parameter, uint8_t *output, uint
 /*!
     \brief      encrypt and decrypt using AES in CCM mode
     \param[in]  cau_parameter: pointer to the input structure
-                  alg_dir: algorithm dirctory
+                  alg_dir: algorithm direction
                     CAU_ENCRYPT, CAU_DECRYPT
                   key: key
                   key_size: key size in bytes
@@ -588,7 +587,7 @@ ErrStatus cau_aes_ccm(cau_parameter_struct *cau_parameter, uint8_t *output, uint
     /* set the LSB to 1 */
     counter[15] |= 0x01U;
 
-    /* init phase */
+    /* prepare phase */
     /* flush the IN and OUT FIFOs */
     cau_fifo_flush();
     /* clear CAUEN bit to ensure CAU is disable */
@@ -598,7 +597,7 @@ ErrStatus cau_aes_ccm(cau_parameter_struct *cau_parameter, uint8_t *output, uint
     cau_key_struct_para_init(&key_initpara);
     /* initialize the CAU peripheral */
     cau_init(cau_parameter->alg_dir, CAU_MODE_AES_CCM, CAU_SWAPPING_8BIT);
-    /* select init phase */
+    /* select prepare phase */
     cau_phase_config(CAU_PREPARE_PHASE);
 
     /* AES key structure parameter config */

@@ -2,11 +2,11 @@
     \file    gd32l23x_timer.c
     \brief   TIMER driver
 
-    \version 2021-08-04, V1.0.0, firmware for GD32L23x
+    \version 2023-06-21, V1.1.0, firmware for GD32L23x
 */
 
 /*
-    Copyright (c) 2021, GigaDevice Semiconductor Inc.
+    Copyright (c) 2023, GigaDevice Semiconductor Inc.
 
     Redistribution and use in source and binary forms, with or without modification,
 are permitted provided that the following conditions are met:
@@ -1359,9 +1359,9 @@ void timer_master_output_trigger_source_select(uint32_t timer_periph, uint32_t o
     \param[in]  slavemode:
                 only one parameter can be selected which is shown as below:
       \arg        TIMER_SLAVE_MODE_DISABLE: slave mode disable
-      \arg        TIMER_ENCODER_MODE0: encoder mode 0 (TIMERx(x=1,2))
-      \arg        TIMER_ENCODER_MODE1: encoder mode 1 (TIMERx(x=1,2))
-      \arg        TIMER_ENCODER_MODE2: encoder mode 2 (TIMERx(x=1,2))
+      \arg        TIMER_QUAD_DECODER_MODE0: quadrature decoder mode 0 (TIMERx(x=1,2))
+      \arg        TIMER_QUAD_DECODER_MODE1: quadrature decoder mode 1 (TIMERx(x=1,2))
+      \arg        TIMER_QUAD_DECODER_MODE2: quadrature decoder mode 2 (TIMERx(x=1,2))
       \arg        TIMER_SLAVE_MODE_RESTART: restart mode (TIMERx(x=1,2,8,11))
       \arg        TIMER_SLAVE_MODE_PAUSE: pause mode (TIMERx(x=1,2,8,11))
       \arg        TIMER_SLAVE_MODE_EVENT: event mode (TIMERx(x=1,2,8,11))
@@ -1434,9 +1434,9 @@ void timer_external_trigger_config(uint32_t timer_periph, uint32_t extprescaler,
     \param[in]  timer_periph: TIMERx(x=1,2)
     \param[in]  decomode:
                 only one parameter can be selected which is shown as below:
-      \arg        TIMER_ENCODER_MODE0: counter counts on CI0FE0 edge depending on CI1FE1 level
-      \arg        TIMER_ENCODER_MODE1: counter counts on CI1FE1 edge depending on CI0FE0 level
-      \arg        TIMER_ENCODER_MODE2: counter counts on both CI0FE0 and CI1FE1 edges depending on the level of the other input
+      \arg        TIMER_QUAD_DECODER_MODE0: quadrature decoder mode 0 
+      \arg        TIMER_QUAD_DECODER_MODE1: quadrature decoder mode 1
+      \arg        TIMER_QUAD_DECODER_MODE2: quadrature decoder mode 2
     \param[in]  ic0polarity:
                 only one parameter can be selected which is shown as below:
       \arg        TIMER_IC_POLARITY_RISING: capture rising edge
@@ -1652,6 +1652,7 @@ void timer_channel_remap_config(uint32_t timer_periph, uint32_t remap)
 {
     TIMER_IRMP(timer_periph) = (uint32_t)remap;
 }
+
 /*!
     \brief      configure TIMER write CHxVAL register selection
     \param[in]  timer_periph: TIMERx(x=1,2,8,11)

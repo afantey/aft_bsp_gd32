@@ -2,11 +2,11 @@
     \file    gd32l23x_rcu.c
     \brief   RCU driver
 
-    \version 2021-08-04, V1.0.0, firmware for GD32L23x
+    \version 2023-06-21, V1.1.0, firmware for GD32L23x
 */
 
 /*
-    Copyright (c) 2021, GigaDevice Semiconductor Inc.
+    Copyright (c) 2023, GigaDevice Semiconductor Inc.
 
     Redistribution and use in source and binary forms, with or without modification,
 are permitted provided that the following conditions are met:
@@ -56,7 +56,7 @@ void rcu_deinit(void)
     while(0U == (RCU_CTL & RCU_CTL_IRC16MSTB)) {
     }
     RCU_CFG0 &= ~RCU_CFG0_SCS;
-    RCU_CTL &= ~(RCU_CTL_HXTALEN | RCU_CTL_CKMEN | RCU_CTL_PLLEN | RCU_CTL_HXTALBPS);
+    RCU_CTL &= ~(RCU_CTL_HXTALEN | RCU_CTL_CKMEN | RCU_CTL_PLLEN | RCU_CTL_HXTALBPS | RCU_CTL_IRC48MEN);
     /* reset RCU */
     RCU_CFG0 &= ~(RCU_CFG0_SCS | RCU_CFG0_AHBPSC | RCU_CFG0_APB1PSC | RCU_CFG0_APB2PSC | \
                   RCU_CFG0_ADCPSC | RCU_CFG0_CKOUTSEL | RCU_CFG0_CKOUTDIV | RCU_CFG0_PLLDV);
@@ -296,7 +296,7 @@ uint32_t rcu_system_clock_source_get(void)
     \brief      configure the AHB clock prescaler selection
     \param[in]  ck_ahb: AHB clock prescaler selection
                 only one parameter can be selected which is shown as below:
-      \arg        RCU_AHB_CKSYS_DIVx, x=1, 2, 4, 8, 16, 64, 128, 256, 512
+      \arg        RCU_AHB_CKSYS_DIVx, x=1, 2, 4, 8, 16, 64, 128, 256, 512: select CK_SYS/x as CK_AHB
     \param[out] none
     \retval     none
 */
@@ -572,13 +572,13 @@ void rcu_usbd_clock_config(uint32_t ck_usbd)
 }
 
 /*!
-    \brief      configure the RTC clock source selection
+    \brief      configure the RTC/SLCD clock source selection
     \param[in]  rtc_clock_source: RTC clock source selection
                 only one parameter can be selected which is shown as below:
       \arg        RCU_RTCSRC_NONE: no clock selected
-      \arg        RCU_RTCSRC_LXTAL: CK_LXTAL selected as RTC source clock
-      \arg        RCU_RTCSRC_IRC32K: CK_IRC32K selected as RTC source clock
-      \arg        RCU_RTCSRC_HXTAL_DIV32: CK_HXTAL/32 selected as RTC source clock
+      \arg        RCU_RTCSRC_LXTAL: CK_LXTAL selected as RTC/SLCD source clock
+      \arg        RCU_RTCSRC_IRC32K: CK_IRC32K selected as RTC/SLCD source clock
+      \arg        RCU_RTCSRC_HXTAL_DIV32: CK_HXTAL/32 selected as RTC/SLCD source clock
     \param[out] none
     \retval     none
 */
@@ -659,128 +659,6 @@ void rcu_lp_bandgap_config(uint32_t lp_bandgap_clock)
     /* reset the RCU_LPB_LPBMODE bits and set according to lp_ldo_voltage */
     RCU_LPB &= ~RCU_LPB_LPBMSEL;
     RCU_LPB |= lp_bandgap_clock;
-}
-
-/*!
-    \brief      get the clock stabilization and periphral reset flags
-    \param[in]  flag: the clock stabilization and periphral reset flags, refer to rcu_flag_enum
-                only one parameter can be selected which is shown as below:
-      \arg        RCU_FLAG_IRC32KSTB: IRC32K stabilization flag
-      \arg        RCU_FLAG_LXTALSTB: LXTAL stabilization flag
-      \arg        RCU_FLAG_IRC16MSTB: IRC16M stabilization flag
-      \arg        RCU_FLAG_HXTALSTB: HXTAL stabilization flag
-      \arg        RCU_FLAG_PLLSTB: PLL stabilization flag
-      \arg        RCU_FLAG_IRC48MSTB: IRC48M stabilization flag
-      \arg        RCU_FLAG_V12RST: V12 domain power reset flag
-      \arg        RCU_FLAG_EPRST: external pin reset flag
-      \arg        RCU_FLAG_PORRST: power reset flag
-      \arg        RCU_FLAG_SWRST: software reset flag
-      \arg        RCU_FLAG_FWDGTRST: free watchdog timer reset flag
-      \arg        RCU_FLAG_WWDGTRST: window watchdog timer reset flag
-      \arg        RCU_FLAG_LPRST: low-power reset flag
-    \param[out] none
-    \retval     FlagStatus: SET or RESET
-*/
-FlagStatus rcu_flag_get(rcu_flag_enum flag)
-{
-    if(RESET != (RCU_REG_VAL(flag) & BIT(RCU_BIT_POS(flag)))) {
-        return SET;
-    } else {
-        return RESET;
-    }
-}
-
-/*!
-    \brief      clear the reset flag
-    \param[in]  none
-    \param[out] none
-    \retval     none
-*/
-void rcu_all_reset_flag_clear(void)
-{
-    RCU_RSTSCK |= RCU_RSTSCK_RSTFC;
-}
-
-/*!
-    \brief      get the clock stabilization interrupt and ckm flags
-    \param[in]  int_flag: interrupt and ckm flags, refer to rcu_int_flag_enum
-                only one parameter can be selected which is shown as below:
-      \arg        RCU_INT_FLAG_IRC32KSTB: IRC32K stabilization interrupt flag
-      \arg        RCU_INT_FLAG_LXTALSTB: LXTAL stabilization interrupt flag
-      \arg        RCU_INT_FLAG_IRC16MSTB: IRC16M stabilization interrupt flag
-      \arg        RCU_INT_FLAG_HXTALSTB: HXTAL stabilization interrupt flag
-      \arg        RCU_INT_FLAG_PLLSTB: PLL stabilization interrupt flag
-      \arg        RCU_INT_FLAG_IRC48MSTB: IRC48M stabilization interrupt flag
-      \arg        RCU_INT_FLAG_LXTALCKM: LXTAL clock stuck interrupt flag
-      \arg        RCU_INT_FLAG_CKM: HXTAL clock stuck interrupt flag
-    \param[out] none
-    \retval     FlagStatus: SET or RESET
-*/
-FlagStatus rcu_interrupt_flag_get(rcu_int_flag_enum int_flag)
-{
-    if(RESET != (RCU_REG_VAL(int_flag) & BIT(RCU_BIT_POS(int_flag)))) {
-        return SET;
-    } else {
-        return RESET;
-    }
-}
-
-/*!
-    \brief      clear the interrupt flags
-    \param[in]  int_flag_clear: clock stabilization and stuck interrupt flags clear, refer to rcu_int_flag_clear_enum
-                only one parameter can be selected which is shown as below:
-      \arg        RCU_INT_FLAG_IRC32KSTB_CLR: IRC32K stabilization interrupt flag clear
-      \arg        RCU_INT_FLAG_LXTALSTB_CLR: LXTAL stabilization interrupt flag clear
-      \arg        RCU_INT_FLAG_IRC16MSTB_CLR: IRC16M stabilization interrupt flag clear
-      \arg        RCU_INT_FLAG_HXTALSTB_CLR: HXTAL stabilization interrupt flag clear
-      \arg        RCU_INT_FLAG_PLLSTB_CLR: PLL stabilization interrupt flag clear
-      \arg        RCU_INT_FLAG_IRC48MSTB_CLR: IRC48M stabilization interrupt flag clear
-      \arg        RCU_INT_FLAG_LXTALCKM_CLR: LXTAL clock stuck interrupt flag clear
-      \arg        RCU_INT_FLAG_CKM_CLR: clock stuck interrupt flag clear
-    \param[out] none
-    \retval     none
-*/
-void rcu_interrupt_flag_clear(rcu_int_flag_clear_enum int_flag_clear)
-{
-    RCU_REG_VAL(int_flag_clear) |= BIT(RCU_BIT_POS(int_flag_clear));
-}
-
-/*!
-    \brief      enable the stabilization interrupt
-    \param[in]  stab_int: clock stabilization interrupt, refer to rcu_int_enum
-                only one parameter can be selected which is shown as below:
-      \arg        RCU_INT_IRC32KSTB: IRC32K stabilization interrupt enable
-      \arg        RCU_INT_LXTALSTB: LXTAL stabilization interrupt enable
-      \arg        RCU_INT_IRC16MSTB: IRC16M stabilization interrupt enable
-      \arg        RCU_INT_HXTALSTB: HXTAL stabilization interrupt enable
-      \arg        RCU_INT_PLLSTB: PLL stabilization interrupt enable
-      \arg        RCU_INT_IRC48MSTB: IRC48M stabilization interrupt enable
-      \arg        RCU_INT_LXTALCKM: LXTAL clock stuck interrup enable
-    \param[out] none
-    \retval     none
-*/
-void rcu_interrupt_enable(rcu_int_enum stab_int)
-{
-    RCU_REG_VAL(stab_int) |= BIT(RCU_BIT_POS(stab_int));
-}
-
-/*!
-    \brief      disable the stabilization interrupt
-    \param[in]  stab_int: clock stabilization interrupt, refer to rcu_int_enum
-                only one parameter can be selected which is shown as below:
-      \arg        RCU_INT_IRC32KSTB: IRC32K stabilization interrupt disable
-      \arg        RCU_INT_LXTALSTB: LXTAL stabilization interrupt disable
-      \arg        RCU_INT_IRC16MSTB: IRC16M stabilization interrupt disable
-      \arg        RCU_INT_HXTALSTB: HXTAL stabilization interrupt disable
-      \arg        RCU_INT_PLLSTB: PLL stabilization interrupt disable
-      \arg        RCU_INT_IRC48MSTB: IRC48M stabilization interrupt disable
-      \arg        RCU_INT_LXTALCKM: LXTAL clock stuck interrup disable
-    \param[out] none
-    \retval     none
-*/
-void rcu_interrupt_disable(rcu_int_enum stab_int)
-{
-    RCU_REG_VAL(stab_int) &= ~BIT(RCU_BIT_POS(stab_int));
 }
 
 /*!
@@ -988,6 +866,21 @@ void rcu_osci_bypass_mode_disable(rcu_osci_type_enum osci)
 }
 
 /*!
+    \brief      set the IRC16M adjust value
+    \param[in]  irc16m_adjval: IRC16M adjust value, must be between 0 and 0x1F
+    \param[out] none
+    \retval     none
+*/
+void rcu_irc16m_adjust_value_set(uint8_t irc16m_adjval)
+{
+    uint32_t adjust = 0U;
+    adjust = RCU_CTL;
+    /* reset the IRC16MADJ bits and set according to irc16m_adjval */
+    adjust &= ~RCU_CTL_IRC16MADJ;
+    RCU_CTL = (adjust | (((uint32_t)irc16m_adjval) << 3));
+}
+
+/*!
     \brief      enable the HXTAL clock monitor
     \param[in]  none
     \param[out] none
@@ -1030,22 +923,6 @@ void rcu_lxtal_clock_monitor_disable(void)
 {
     RCU_CTL &= ~RCU_CTL_LXTALCKMEN;
 }
-
-/*!
-    \brief      set the IRC16M adjust value
-    \param[in]  irc16m_adjval: IRC16M adjust value, must be between 0 and 0x1F
-    \param[out] none
-    \retval     none
-*/
-void rcu_irc16m_adjust_value_set(uint8_t irc16m_adjval)
-{
-    uint32_t adjust = 0U;
-    adjust = RCU_CTL;
-    /* reset the IRC16MADJ bits and set according to irc16m_adjval */
-    adjust &= ~RCU_CTL_IRC16MADJ;
-    RCU_CTL = (adjust | (((uint32_t)irc16m_adjval) << 3));
-}
-
 
 /*!
     \brief      unlock the voltage key
@@ -1105,7 +982,7 @@ uint32_t rcu_clock_freq_get(rcu_clock_freq_enum clock)
         pllmf6 = GET_BITS(RCU_CFG0, 27, 27);
         pllmf  = ((pllmf6 << 6) + pllmf);
         /* high 16 bits */
-        if(14U <= pllmf) {
+        if(14U < pllmf) {
             pllmf += 1U;
         } else if(15U == pllmf) {
             pllmf = 16U;
@@ -1286,7 +1163,7 @@ uint32_t rcu_clock_freq_get(rcu_clock_freq_enum clock)
             /* calculate IRC16MDIV clock frequency */
             idx = GET_BITS(RCU_CFG2, 18, 20);
             clk_exp = IRC16M_exp[idx];
-            lptimer_freq = IRC16M_VALUE >> clk_exp;
+            usart_freq = IRC16M_VALUE >> clk_exp;
         } else {
         }
         ck_freq = lptimer_freq;
@@ -1295,4 +1172,128 @@ uint32_t rcu_clock_freq_get(rcu_clock_freq_enum clock)
         break;
     }
     return ck_freq;
+}
+
+
+/*!
+    \brief      get the clock stabilization and periphral reset flags
+    \param[in]  flag: the clock stabilization and periphral reset flags, refer to rcu_flag_enum
+                only one parameter can be selected which is shown as below:
+      \arg        RCU_FLAG_IRC32KSTB: IRC32K stabilization flag
+      \arg        RCU_FLAG_LXTALSTB: LXTAL stabilization flag
+      \arg        RCU_FLAG_IRC16MSTB: IRC16M stabilization flag
+      \arg        RCU_FLAG_HXTALSTB: HXTAL stabilization flag
+      \arg        RCU_FLAG_PLLSTB: PLL stabilization flag
+      \arg        RCU_FLAG_IRC48MSTB: IRC48M stabilization flag
+      \arg        RCU_FLAG_V11RST: V11 domain power reset flag
+      \arg        RCU_FLAG_EPRST: external pin reset flag
+      \arg        RCU_FLAG_PORRST: power reset flag
+      \arg        RCU_FLAG_SWRST: software reset flag
+      \arg        RCU_FLAG_FWDGTRST: free watchdog timer reset flag
+      \arg        RCU_FLAG_WWDGTRST: window watchdog timer reset flag
+      \arg        RCU_FLAG_LPRST: low-power reset flag
+      \arg        RCU_FLAG_LXTALCMD: LXTAL clock failure detection flag
+    \param[out] none
+    \retval     FlagStatus: SET or RESET
+*/
+FlagStatus rcu_flag_get(rcu_flag_enum flag)
+{
+    if(RESET != (RCU_REG_VAL(flag) & BIT(RCU_BIT_POS(flag)))) {
+        return SET;
+    } else {
+        return RESET;
+    }
+}
+
+/*!
+    \brief      clear the reset flag
+    \param[in]  none
+    \param[out] none
+    \retval     none
+*/
+void rcu_all_reset_flag_clear(void)
+{
+    RCU_RSTSCK |= RCU_RSTSCK_RSTFC;
+}
+
+/*!
+    \brief      get the clock stabilization interrupt and ckm flags
+    \param[in]  int_flag: interrupt and ckm flags, refer to rcu_int_flag_enum
+                only one parameter can be selected which is shown as below:
+      \arg        RCU_INT_FLAG_IRC32KSTB: IRC32K stabilization interrupt flag
+      \arg        RCU_INT_FLAG_LXTALSTB: LXTAL stabilization interrupt flag
+      \arg        RCU_INT_FLAG_IRC16MSTB: IRC16M stabilization interrupt flag
+      \arg        RCU_INT_FLAG_HXTALSTB: HXTAL stabilization interrupt flag
+      \arg        RCU_INT_FLAG_PLLSTB: PLL stabilization interrupt flag
+      \arg        RCU_INT_FLAG_IRC48MSTB: IRC48M stabilization interrupt flag
+      \arg        RCU_INT_FLAG_LXTALCKM: LXTAL clock stuck interrupt flag
+      \arg        RCU_INT_FLAG_CKM: HXTAL clock stuck interrupt flag
+    \param[out] none
+    \retval     FlagStatus: SET or RESET
+*/
+FlagStatus rcu_interrupt_flag_get(rcu_int_flag_enum int_flag)
+{
+    if(RESET != (RCU_REG_VAL(int_flag) & BIT(RCU_BIT_POS(int_flag)))) {
+        return SET;
+    } else {
+        return RESET;
+    }
+}
+
+/*!
+    \brief      clear the interrupt flags
+    \param[in]  int_flag_clear: clock stabilization and stuck interrupt flags clear, refer to rcu_int_flag_clear_enum
+                only one parameter can be selected which is shown as below:
+      \arg        RCU_INT_FLAG_IRC32KSTB_CLR: IRC32K stabilization interrupt flag clear
+      \arg        RCU_INT_FLAG_LXTALSTB_CLR: LXTAL stabilization interrupt flag clear
+      \arg        RCU_INT_FLAG_IRC16MSTB_CLR: IRC16M stabilization interrupt flag clear
+      \arg        RCU_INT_FLAG_HXTALSTB_CLR: HXTAL stabilization interrupt flag clear
+      \arg        RCU_INT_FLAG_PLLSTB_CLR: PLL stabilization interrupt flag clear
+      \arg        RCU_INT_FLAG_IRC48MSTB_CLR: IRC48M stabilization interrupt flag clear
+      \arg        RCU_INT_FLAG_LXTALCKM_CLR: LXTAL clock stuck interrupt flag clear
+      \arg        RCU_INT_FLAG_CKM_CLR: clock stuck interrupt flag clear
+    \param[out] none
+    \retval     none
+*/
+void rcu_interrupt_flag_clear(rcu_int_flag_clear_enum int_flag_clear)
+{
+    RCU_REG_VAL(int_flag_clear) |= BIT(RCU_BIT_POS(int_flag_clear));
+}
+
+/*!
+    \brief      enable the stabilization interrupt
+    \param[in]  stab_int: clock stabilization interrupt, refer to rcu_int_enum
+                only one parameter can be selected which is shown as below:
+      \arg        RCU_INT_IRC32KSTB: IRC32K stabilization interrupt enable
+      \arg        RCU_INT_LXTALSTB: LXTAL stabilization interrupt enable
+      \arg        RCU_INT_IRC16MSTB: IRC16M stabilization interrupt enable
+      \arg        RCU_INT_HXTALSTB: HXTAL stabilization interrupt enable
+      \arg        RCU_INT_PLLSTB: PLL stabilization interrupt enable
+      \arg        RCU_INT_IRC48MSTB: IRC48M stabilization interrupt enable
+      \arg        RCU_INT_LXTALCKM: LXTAL clock stuck interrup enable
+    \param[out] none
+    \retval     none
+*/
+void rcu_interrupt_enable(rcu_int_enum stab_int)
+{
+    RCU_REG_VAL(stab_int) |= BIT(RCU_BIT_POS(stab_int));
+}
+
+/*!
+    \brief      disable the stabilization interrupt
+    \param[in]  stab_int: clock stabilization interrupt, refer to rcu_int_enum
+                only one parameter can be selected which is shown as below:
+      \arg        RCU_INT_IRC32KSTB: IRC32K stabilization interrupt disable
+      \arg        RCU_INT_LXTALSTB: LXTAL stabilization interrupt disable
+      \arg        RCU_INT_IRC16MSTB: IRC16M stabilization interrupt disable
+      \arg        RCU_INT_HXTALSTB: HXTAL stabilization interrupt disable
+      \arg        RCU_INT_PLLSTB: PLL stabilization interrupt disable
+      \arg        RCU_INT_IRC48MSTB: IRC48M stabilization interrupt disable
+      \arg        RCU_INT_LXTALCKM: LXTAL clock stuck interrup disable
+    \param[out] none
+    \retval     none
+*/
+void rcu_interrupt_disable(rcu_int_enum stab_int)
+{
+    RCU_REG_VAL(stab_int) &= ~BIT(RCU_BIT_POS(stab_int));
 }

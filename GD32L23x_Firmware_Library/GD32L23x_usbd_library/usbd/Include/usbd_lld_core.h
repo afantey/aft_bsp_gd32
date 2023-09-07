@@ -2,11 +2,11 @@
     \file    usbd_lld_core.h
     \brief   USB device low level driver core
 
-    \version 2021-08-04, V1.0.0, firmware for GD32L23x
+    \version 2023-06-21, V1.1.0, firmware for GD32L23x
 */
 
 /*
-    Copyright (c) 2021, GigaDevice Semiconductor Inc.
+    Copyright (c) 2023, GigaDevice Semiconductor Inc.
 
     Redistribution and use in source and binary forms, with or without modification,
 are permitted provided that the following conditions are met:
@@ -39,14 +39,16 @@ OF SUCH DAMAGE.
 #include "usbd_core.h"
 
 /* double buffer endpoint direction enumeration */
-enum dbuf_ep_dir {
+enum dbuf_ep_dir
+{
     DBUF_EP_IN,               /*!< double buffer in direction */
     DBUF_EP_OUT,              /*!< double buffer out direction */
     DBUF_EP_ERR,              /*!< double buffer error direction */
 };
 
 /* USBD endpoint ram structure */
-typedef struct {
+typedef struct 
+{
     __IO uint32_t tx_addr;    /*!< transmission address */
     __IO uint32_t tx_count;   /*!< transmission count */
     __IO uint32_t rx_addr;    /*!< reception address */
@@ -56,7 +58,8 @@ typedef struct {
 extern struct _usb_handler usbd_drv_handler;
 
 /* USB core driver structure */
-typedef struct {
+typedef struct 
+{
     usb_basic  basic;
     usb_dev    *dev;
 } usb_core_drv;

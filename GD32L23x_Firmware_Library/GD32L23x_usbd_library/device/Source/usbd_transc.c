@@ -2,11 +2,11 @@
     \file    usbd_transc.c
     \brief   USBD transaction function
 
-    \version 2021-08-04, V1.0.0, firmware for GD32L23x
+    \version 2023-06-21, V1.1.0, firmware for GD32L23x
 */
 
 /*
-    Copyright (c) 2021, GigaDevice Semiconductor Inc.
+    Copyright (c) 2023, GigaDevice Semiconductor Inc.
 
     Redistribution and use in source and binary forms, with or without modification,
 are permitted provided that the following conditions are met:
@@ -36,10 +36,11 @@ OF SUCH DAMAGE.
 #include "usbd_transc.h"
 
 /* local function prototypes ('static') */
-static inline void usb_stall_transc(usb_dev *udev);
-static inline void usb_ctl_status_in(usb_dev *udev);
+static inline void usb_stall_transc (usb_dev *udev);
 static inline void usb_ctl_data_in(usb_dev *udev);
-static inline void usb_ctl_out(usb_dev *udev);
+static inline void usb_ctl_status_in(usb_dev *udev);
+static inline void usb_ctl_data_out (usb_dev *udev);
+static inline void usb_ctl_status_out(usb_dev *udev);
 static inline void usb_0len_packet_send(usb_dev *udev);
 
 /*!
@@ -57,13 +58,13 @@ void _usb_setup_transc(usb_dev *udev, uint8_t ep_num)
 
     uint16_t count = udev->drv_handler->ep_read((uint8_t *)(&udev->control.req), 0U, (uint8_t)EP_BUF_SNG);
 
-    if(count != USB_SETUP_PACKET_LEN) {
+    if (count != USB_SETUP_PACKET_LEN) {
         usb_stall_transc(udev);
 
         return;
     }
 
-    switch(udev->control.req.bmRequestType & USB_REQTYPE_MASK) {
+    switch (udev->control.req.bmRequestType & USB_REQTYPE_MASK) {
     /* standard device request */
     case USB_REQTYPE_STRD:
         reqstat = usbd_standard_request(udev, &udev->control.req);
@@ -83,16 +84,16 @@ void _usb_setup_transc(usb_dev *udev, uint8_t ep_num)
         break;
     }
 
-    if(REQ_SUPP == reqstat) {
-        if(0U == udev->control.req.wLength) {
+    if (REQ_SUPP == reqstat) {
+        if (0U == udev->control.req.wLength) {
             /* USB control transfer status in stage */
             usb_ctl_status_in(udev);
         } else {
-            if(udev->control.req.bmRequestType & 0x80U) {
+            if (udev->control.req.bmRequestType & 0x80U) {
                 usb_ctl_data_in(udev);
             } else {
                 /* USB control transfer data out stage */
-                usb_ctl_out(udev);
+                usb_ctl_data_out(udev);
             }
         }
     } else {
@@ -109,15 +110,22 @@ void _usb_setup_transc(usb_dev *udev, uint8_t ep_num)
 */
 void _usb_out0_transc(usb_dev *udev, uint8_t ep_num)
 {
-    if(((uint8_t)USBD_CONFIGURED == udev->cur_status) && (udev->class_core->ctlx_out != NULL)) {
+    if (((uint8_t)USBD_CONFIGURED == udev->cur_status) && (NULL != udev->class_core->ctlx_out)) {
         /* device class handle */
         (void)udev->class_core->ctlx_out(udev);
     }
 
-    usb_transc_config(&udev->transc_out[ep_num], NULL, 0U, 0U);
+    if (USBD_CTL_DATA_OUT == udev->control.ctl_state) {
+        /* enter the control transaction status IN stage */
+        usb_ctl_status_in(udev);
+    } else if (USBD_CTL_STATUS_OUT == udev->control.ctl_state) {
+        usb_transc_config(&udev->transc_out[ep_num], NULL, 0U, 0U);
 
-    /* enter the control transaction status in stage */
-    usb_ctl_status_in(udev);
+        udev->control.ctl_state = USBD_CTL_IDLE;
+    } else {
+        /* no operation */
+    }
+
 }
 
 /*!
@@ -131,78 +139,27 @@ void _usb_in0_transc(usb_dev *udev, uint8_t ep_num)
 {
     (void)ep_num;
 
-    if(udev->control.ctl_zlp) {
+    if (udev->control.ctl_zlp) {
         /* send 0 length packet */
         usb_0len_packet_send(udev);
 
         udev->control.ctl_zlp = 0U;
     }
 
-    if(((uint8_t)USBD_CONFIGURED == udev->cur_status) && (udev->class_core->ctlx_in != NULL)) {
+    if (((uint8_t)USBD_CONFIGURED == udev->cur_status) && (NULL != udev->class_core->ctlx_in)) {
         (void)udev->class_core->ctlx_in(udev);
     }
 
-    /* USB control transfer status out stage */
-    usb_ctl_out(udev);
+    if (USBD_CTL_DATA_IN == udev->control.ctl_state) {
+        /* USB control transfer status OUT stage */
+        usb_ctl_status_out(udev);
+    } else if (USBD_CTL_STATUS_IN == udev->control.ctl_state) {
+        udev->control.ctl_state = USBD_CTL_IDLE;
+    }
 
     if(0U != udev->dev_addr) {
         udev->drv_handler->set_addr(udev);
 
         udev->dev_addr = 0U;
     }
-}
-
-/*!
-    \brief      USB stalled transaction
-    \param[in]  udev: pointer to USB device instance
-    \param[out] none
-    \retval     none
-*/
-static inline void usb_stall_transc(usb_dev *udev)
-{
-    usbd_ep_stall(udev, 0x0U);
-}
-
-/*!
-    \brief      USB control transaction status in stage
-    \param[in]  udev: pointer to USB device instance
-    \param[out] none
-    \retval     none
-*/
-static inline void usb_ctl_status_in(usb_dev *udev)
-{
-    udev->drv_handler->ep_write(udev->transc_in[0].xfer_buf, 0U, 0U);
-}
-
-/*!
-    \brief      USB control transaction data in stage
-    \param[in]  udev: pointer to USB device instance
-    \param[out] none
-    \retval     none
-*/
-static inline void usb_ctl_data_in(usb_dev *udev)
-{
-    usbd_ep_send(udev, 0U, udev->transc_in[0].xfer_buf, udev->transc_in[0].xfer_len);
-}
-
-/*!
-    \brief      USB control transaction data out & status out stage
-    \param[in]  udev: pointer to USB device instance
-    \param[out] none
-    \retval     none
-*/
-static inline void usb_ctl_out(usb_dev *udev)
-{
-    udev->drv_handler->ep_rx_enable(udev, 0U);
-}
-
-/*!
-    \brief      USB send 0 length data packet
-    \param[in]  udev: pointer to USB device instance
-    \param[out] none
-    \retval     none
-*/
-static inline void usb_0len_packet_send(usb_dev *udev)
-{
-    udev->drv_handler->ep_write(udev->transc_in[0].xfer_buf, 0U, 0U);
 }

@@ -2,11 +2,11 @@
     \file    usbd_core.h
     \brief   USB device driver core
 
-    \version 2021-08-04, V1.0.0, firmware for GD32L23x
+    \version 2023-06-21, V1.1.0, firmware for GD32L23x
 */
 
 /*
-    Copyright (c) 2021, GigaDevice Semiconductor Inc.
+    Copyright (c) 2023, GigaDevice Semiconductor Inc.
 
     Redistribution and use in source and binary forms, with or without modification,
 are permitted provided that the following conditions are met:
@@ -50,7 +50,8 @@ OF SUCH DAMAGE.
 #define USBD_TRANSC_COUNT     3U
 
 /* USB device operation status */
-enum usbd_status {
+enum usbd_status 
+{
     USBD_UNCONNECTED = 0U,        /*!< USB device unconnected status */
     USBD_DEFAULT,                 /*!< USB device default status */
     USBD_ADDRESSED,               /*!< USB device addressed status */
@@ -60,13 +61,22 @@ enum usbd_status {
 };
 
 /* USB device operation state */
-enum usbd_state {
+enum usbd_state 
+{
     USBD_OK = 0U,                 /*!< USB device OK state */
     USBD_BUSY,                    /*!< USB device busy state */
     USBD_FAIL                     /*!< USB device fail state */
 };
 
-/* USB device transaction type */
+/* USB device type */
+enum usbd_ctl_state 
+{
+    USBD_CTL_IDLE = 0U,
+    USBD_CTL_DATA_IN,
+    USBD_CTL_DATA_OUT,
+    USBD_CTL_STATUS_IN,
+    USBD_CTL_STATUS_OUT
+};
 enum usbd_transc {
     TRANSC_SETUP = 0U,            /*!< SETUP transaction */
     TRANSC_OUT,                   /*!< OUT transaction */
@@ -81,24 +91,27 @@ enum usbd_ep_kind {
 };
 
 /* USB device transaction structure */
-typedef struct {
+typedef struct 
+{
+    __ALIGNED(2) uint8_t   ep_stall;           /*!< endpoint STALL */
     uint16_t  max_len;            /*!< packet max length */
-    uint8_t   ep_stall;           /*!< endpoint STALL */
 
-    uint8_t  *xfer_buf;           /*!< transfer buffer */
+    uint8_t   *xfer_buf;          /*!< transfer buffer */
     uint16_t  xfer_len;           /*!< transfer length */
     uint16_t  xfer_count;         /*!< transfer count */
 } usb_transc;
 
 /* USB device basic structure */
-typedef struct {
-    uint8_t  max_ep_count;        /*!< endpoint max count */
+typedef struct 
+{
+    __ALIGNED(2) uint8_t  max_ep_count;        /*!< endpoint max count */
     uint8_t  twin_buf;            /*!< double buffer */
     uint16_t ram_size;            /*!< ram size */
 } usb_basic;
 
 /* USB descriptor */
-typedef struct {
+typedef struct 
+{
     uint8_t *dev_desc;            /*!< device descriptor */
     uint8_t *config_desc;         /*!< configure descriptor */
     uint8_t *bos_desc;            /*!< BOS descriptor */
@@ -106,8 +119,9 @@ typedef struct {
 } usb_desc;
 
 /* USB power management */
-typedef struct {
-    uint8_t  power_mode;          /*!< power mode */
+typedef struct 
+{
+    __ALIGNED(2) uint8_t  power_mode;          /*!< power mode */
     uint8_t  power_low;           /*!< power low */
     uint8_t  esof_count;          /*!< ESOF count */
     uint8_t  suspend_enabled;     /*!< suspend enabled flag */
@@ -118,7 +132,7 @@ typedef struct {
 
 /* USB LPM management */
 typedef struct {
-    uint8_t cHIRD;               /*!< configure BESL value */
+    __ALIGNED(2) uint8_t cHIRD;               /*!< configure BESL value */
     uint8_t rHIRD;               /*!< received BESL value */
     uint8_t bLinkState;          /*!< bLinkState value */
     uint8_t L1_resume;           /*!< L1 resume */
@@ -126,9 +140,11 @@ typedef struct {
 } usb_lpm;
 
 /* USB control information */
-typedef struct {
-    usb_req    req;               /*!< USB request */
+typedef struct 
+{
+    __ALIGNED(2) usb_req    req;               /*!< USB request */
     uint8_t    ctl_zlp;           /*!< control zero length packet */
+    uint8_t    ctl_state;         /*!< control state */
 } usb_control;
 
 typedef struct _usb_dev usb_dev;
@@ -136,25 +152,26 @@ typedef struct _usb_handler usb_handler;
 typedef void (*usb_ep_transc)(usb_dev *usbd_dev, uint8_t ep_num);
 
 /* USB class structure */
-typedef struct {
+typedef struct 
+{
     uint8_t req_cmd;
     __ALIGNED(2) uint8_t req_altset;
 
-    uint8_t (*init)(usb_dev *udev, uint8_t config_index);
-    uint8_t (*deinit)(usb_dev *udev, uint8_t config_index);
+    uint8_t (*init)         (usb_dev *udev, uint8_t config_index);
+    uint8_t (*deinit)       (usb_dev *udev, uint8_t config_index);
 
-    uint8_t (*req_process)(usb_dev *udev, usb_req *req);
-    uint8_t (*oem_req_process)(usb_dev *udev, usb_req *req);
+    uint8_t (*req_process)  (usb_dev *udev, usb_req *req);
 
-    uint8_t (*ctlx_in)(usb_dev *udev);
-    uint8_t (*ctlx_out)(usb_dev *udev);
+    uint8_t (*ctlx_in)      (usb_dev *udev);
+    uint8_t (*ctlx_out)     (usb_dev *udev);
 
-    void (*data_in)(usb_dev *udev, uint8_t ep_num);
-    void (*data_out)(usb_dev *udev, uint8_t ep_num);
+    void (*data_in)         (usb_dev *udev, uint8_t ep_num);
+    void (*data_out)        (usb_dev *udev, uint8_t ep_num);
 } usb_class;
 
 /* USB core driver structure */
-struct _usb_dev {
+struct _usb_dev 
+{
     /* basic parameters */
     __ALIGNED(2) uint8_t         config;
     uint8_t         dev_addr;
@@ -166,7 +183,7 @@ struct _usb_dev {
 #ifdef LPM_ENABLED
     usb_lpm         lpm;
 #endif /* LPM_ENABLED */
-    __ALIGNED(2) usb_control     control;
+    usb_control     control;
 
     usb_transc      transc_out[EP_COUNT];
     usb_transc      transc_in[EP_COUNT];
@@ -183,30 +200,32 @@ struct _usb_dev {
     void           *data;
 };
 
-typedef struct {
-    uint8_t (*SOF)(usb_dev *udev);  /*!< SOF ISR callback */
+typedef struct
+{
+    uint8_t (*SOF) (usb_dev *udev); /*!< SOF ISR callback */
 } usbd_int_cb_struct;
 
 /* USB handler structure */
-struct _usb_handler {
-    void (*init)(void);
-    void (*deinit)(void);
+struct _usb_handler 
+{
+    void (*init)             (void);
+    void (*deinit)           (void);
 
-    void (*dp_pullup)(FlagStatus status);
-    void (*set_addr)(usb_dev *udev);
-    void (*suspend)(void);
-    void (*suspend_leave)(void);
-    void (*resume)(usb_dev *udev);
+    void (*dp_pullup)        (FlagStatus status);
+    void (*set_addr)         (usb_dev *udev);
+    void (*suspend)          (void);
+    void (*suspend_leave)    (void);
+    void (*resume)           (usb_dev *udev);
 
-    void (*ep_reset)(usb_dev *udev);
-    void (*ep_setup)(usb_dev *udev, uint8_t buf_kind, uint32_t buf_addr, const usb_desc_ep *ep_desc);
-    void (*ep_disable)(usb_dev *udev, uint8_t ep_addr);
-    void (*ep_rx_enable)(usb_dev *udev, uint8_t ep_num);
-    void (*ep_write)(uint8_t *fifo, uint8_t ep_num, uint16_t bytes);
-    uint16_t (*ep_read)(uint8_t *fifo, uint8_t ep_num, uint8_t buf_kind);
-    void (*ep_stall_set)(usb_dev *udev, uint8_t ep_addr);
-    void (*ep_stall_clear)(usb_dev *udev, uint8_t ep_addr);
-    uint8_t (*ep_status_get)(usb_dev *udev, uint8_t ep_addr);
+    void (*ep_reset)         (usb_dev *udev);
+    void (*ep_setup)         (usb_dev *udev, uint8_t buf_kind, uint32_t buf_addr, const usb_desc_ep *ep_desc);
+    void (*ep_disable)       (usb_dev *udev, uint8_t ep_addr);
+    void (*ep_rx_enable)     (usb_dev *udev, uint8_t ep_num);
+    void (*ep_write)         (uint8_t *fifo, uint8_t ep_num, uint16_t bytes);
+    uint16_t (*ep_read)      (uint8_t *fifo, uint8_t ep_num, uint8_t buf_kind);
+    void (*ep_stall_set)     (usb_dev *udev, uint8_t ep_addr);
+    void (*ep_stall_clear)   (usb_dev *udev, uint8_t ep_addr);
+    uint16_t (*ep_status_get) (usb_dev *udev, uint8_t ep_addr);
 };
 
 extern usbd_int_cb_struct *usbd_int_fops;
@@ -319,7 +338,7 @@ __STATIC_INLINE void usbd_ep_clear_stall(usb_dev *udev, uint8_t ep_addr)
     \param[out] none
     \retval     none
 */
-__STATIC_INLINE uint8_t usbd_ep_status_get(usb_dev *udev, uint8_t ep_addr)
+__STATIC_INLINE uint16_t usbd_ep_status_get(usb_dev *udev, uint8_t ep_addr)
 {
     return udev->drv_handler->ep_status_get(udev, ep_addr);
 }

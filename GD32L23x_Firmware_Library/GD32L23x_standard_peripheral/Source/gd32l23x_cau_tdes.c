@@ -2,11 +2,11 @@
     \file    gd32l23x_cau_tdes.c
     \brief   CAU TDES driver
 
-    \version 2021-08-04, V1.0.0, firmware for GD32L23x
+    \version 2023-06-21, V1.1.0, firmware for GD32L23x
 */
 
 /*
-    Copyright (c) 2021, GigaDevice Semiconductor Inc.
+    Copyright (c) 2023, GigaDevice Semiconductor Inc.
 
     Redistribution and use in source and binary forms, with or without modification,
 are permitted provided that the following conditions are met:
@@ -42,7 +42,7 @@ static ErrStatus cau_tdes_calculate(uint8_t *input, uint32_t in_length, uint8_t 
 /*!
     \brief      encrypt and decrypt using TDES in ECB mode
     \param[in]  cau_parameter: pointer to the input structure
-                  alg_dir: algorithm dirctory
+                  alg_dir: algorithm direction
                     CAU_ENCRYPT, CAU_DECRYPT
                   key: key, 24 bytes
                   input: input data
@@ -93,7 +93,7 @@ ErrStatus cau_tdes_ecb(cau_parameter_struct *cau_parameter, uint8_t *output)
 /*!
     \brief      encrypt and decrypt using TDES in CBC mode
     \param[in]  cau_parameter: pointer to the input structure
-                  alg_dir: algorithm dirctory
+                  alg_dir: algorithm direction
                     CAU_ENCRYPT, CAU_DECRYPT
                   key: key, 24 bytes
                   iv: initialization vector, 8 bytes

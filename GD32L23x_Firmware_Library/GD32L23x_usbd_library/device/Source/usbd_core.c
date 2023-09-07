@@ -2,11 +2,11 @@
     \file    usbd_core.c
     \brief   USB device driver
 
-    \version 2021-08-04, V1.0.0, firmware for GD32L23x
+    \version 2023-06-21, V1.1.0, firmware for GD32L23x
 */
 
 /*
-    Copyright (c) 2021, GigaDevice Semiconductor Inc.
+    Copyright (c) 2023, GigaDevice Semiconductor Inc.
 
     Redistribution and use in source and binary forms, with or without modification,
 are permitted provided that the following conditions are met:
@@ -60,12 +60,13 @@ void usbd_init(usb_dev *udev, usb_desc *desc, usb_class *usbc)
     udev->class_core = usbc;
     udev->drv_handler = &usbd_drv_handler;
 
+    udev->control.ctl_state = USBD_CTL_IDLE;
     udev->ep_transc[0][TRANSC_SETUP] = _usb_setup_transc;
     udev->ep_transc[0][TRANSC_OUT] = _usb_out0_transc;
     udev->ep_transc[0][TRANSC_IN] = _usb_in0_transc;
 
     /* configure power management */
-    udev->pm.power_mode = (udev->desc->config_desc[7] & 0x40U) >> 5;
+    udev->pm.power_mode = (udev->desc->config_desc[7] & 0x40U) >> 5U;
 
     /* enable USB suspend */
     udev->pm.suspend_enabled = 1U;

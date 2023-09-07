@@ -2,11 +2,11 @@
     \file    gd32l23x_trng.c
     \brief   TRNG driver
 
-    \version 2021-08-04, V1.0.0, firmware for GD32L23x
+    \version 2023-06-21, V1.1.0, firmware for GD32L23x
 */
 
 /*
-    Copyright (c) 2021, GigaDevice Semiconductor Inc.
+    Copyright (c) 2023, GigaDevice Semiconductor Inc.
 
     Redistribution and use in source and binary forms, with or without modification,
 are permitted provided that the following conditions are met:
@@ -35,7 +35,7 @@ OF SUCH DAMAGE.
 #include "gd32l23x_trng.h"
 
 /*!
-    \brief      deinitialize the TRNG
+    \brief      reset TRNG
     \param[in]  none
     \param[out] none
     \retval     none
@@ -47,7 +47,7 @@ void trng_deinit(void)
 }
 
 /*!
-    \brief      enable the TRNG interface
+    \brief      enable TRNG
     \param[in]  none
     \param[out] none
     \retval     none
@@ -58,7 +58,7 @@ void trng_enable(void)
 }
 
 /*!
-    \brief      disable the TRNG interface
+    \brief      disable TRNG
     \param[in]  none
     \param[out] none
     \retval     none
@@ -72,7 +72,7 @@ void trng_disable(void)
     \brief      get the true random data
     \param[in]  none
     \param[out] none
-    \retval     the generated random data
+    \retval     uint32_t: 0x0-0xFFFFFFFF
 */
 uint32_t trng_get_true_random_data(void)
 {
@@ -80,7 +80,7 @@ uint32_t trng_get_true_random_data(void)
 }
 
 /*!
-    \brief      get the trng status flags
+    \brief      get TRNG flag status
     \param[in]  flag: trng status flag, refer to trng_flag_enum
                 only one parameter can be selected which is shown as below:
       \arg        TRNG_FLAG_DRDY: Random Data ready status
@@ -99,29 +99,29 @@ FlagStatus trng_flag_get(trng_flag_enum flag)
 }
 
 /*!
-    \brief      enable the TRNG interrupt
+    \brief      enable TRNG interrupt
     \param[in]  none
     \param[out] none
     \retval     none
 */
 void trng_interrupt_enable(void)
 {
-    TRNG_CTL |= (uint32_t)TRNG_CTL_IE;
+    TRNG_CTL |= (uint32_t)TRNG_CTL_TRNGIE;
 }
 
 /*!
-    \brief      disable the TRNG interrupt
+    \brief      disable TRNG interrupt
     \param[in]  none
     \param[out] none
     \retval     none
 */
 void trng_interrupt_disable(void)
 {
-    TRNG_CTL &= ~(uint32_t)TRNG_CTL_IE;
+    TRNG_CTL &= ~(uint32_t)TRNG_CTL_TRNGIE;
 }
 
 /*!
-    \brief      get the trng interrupt flags
+    \brief      get TRNG interrupt flag status
     \param[in]  int_flag: trng interrupt flag, refer to trng_int_flag_enum
                 only one parameter can be selected which is shown as below:
       \arg        TRNG_INT_FLAG_CEIF: clock error interrupt flag
@@ -139,7 +139,7 @@ FlagStatus trng_interrupt_flag_get(trng_int_flag_enum int_flag)
 }
 
 /*!
-    \brief      clear the trng interrupt flags
+    \brief      clear TRNG interrupt flag status
     \param[in]  int_flag: trng interrupt flag, refer to trng_int_flag_enum
                 only one parameter can be selected which is shown as below:
       \arg        TRNG_INT_FLAG_CEIF: clock error interrupt flag

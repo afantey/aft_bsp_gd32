@@ -2,11 +2,11 @@
     \file    gd32l23x_crc.c
     \brief   CRC driver
 
-    \version 2021-08-04, V1.0.0, firmware for GD32L23x
+    \version 2023-06-21, V1.1.0, firmware for GD32L23x
 */
 
 /*
-    Copyright (c) 2021, GigaDevice Semiconductor Inc.
+    Copyright (c) 2023, GigaDevice Semiconductor Inc.
 
     Redistribution and use in source and binary forms, with or without modification,
 are permitted provided that the following conditions are met:
@@ -34,6 +34,11 @@ OF SUCH DAMAGE.
 
 #include "gd32l23x_crc.h"
 
+#define CRC_IDATA_RESET_VALUE     ((uint32_t)0xFFFFFFFFU)
+#define CRC_DATA_RESET_VALUE      ((uint32_t)0xFFFFFFFFU)
+#define CRC_FDATA_RESET_VALUE     ((uint32_t)0x00000000U)
+#define CRC_POLY_RESET_VALUE      ((uint32_t)0x04C11DB7U)
+
 /*!
     \brief      deinit CRC calculation unit
     \param[in]  none
@@ -42,11 +47,11 @@ OF SUCH DAMAGE.
 */
 void crc_deinit(void)
 {
-    CRC_IDATA = (uint32_t)0xFFFFFFFFU;
-    CRC_DATA  = (uint32_t)0xFFFFFFFFU;
-    CRC_FDATA = (uint32_t)0x00000000U;
-    CRC_POLY  = (uint32_t)0x04C11DB7U;
-    CRC_CTL   = CRC_CTL_RST;
+    CRC_IDATA = CRC_IDATA_RESET_VALUE;
+    CRC_DATA  = CRC_DATA_RESET_VALUE;
+    CRC_FDATA = CRC_FDATA_RESET_VALUE;
+    CRC_POLY  = CRC_POLY_RESET_VALUE;
+    CRC_CTL   = (uint32_t)CRC_CTL_RST;
 }
 
 /*!

@@ -2,11 +2,11 @@
     \file    gd32l23x_dma.c
     \brief   DMA driver
 
-    \version 2021-08-04, V1.0.0, firmware for GD32L23x
+    \version 2023-06-21, V1.1.0, firmware for GD32L23x
 */
 
 /*
-    Copyright (c) 2021, GigaDevice Semiconductor Inc.
+    Copyright (c) 2023, GigaDevice Semiconductor Inc.
 
     Redistribution and use in source and binary forms, with or without modification,
 are permitted provided that the following conditions are met:
@@ -59,8 +59,8 @@ void dma_deinit(dma_channel_enum channelx)
 
 /*!
     \brief      initialize the parameters of DMA struct with the default values
-    \param[in]  init_struct: the initialization data needed to initialize DMA channel
-    \param[out] none
+    \param[in]  none
+    \param[out] init_struct: the initialization data needed to initialize DMA channel
     \retval     none
 */
 void dma_struct_para_init(dma_parameter_struct *init_struct)
@@ -692,8 +692,8 @@ void dmamux_event_generation_disable(dmamux_multiplexer_channel_enum channelx)
 
 /*!
     \brief      initialize the parameters of DMAMUX request generator structure with the default values
-    \param[in]  init_struct: the initialization data needed to initialize DMAMUX request generator channel
-    \param[out] none
+    \param[in]  none
+    \param[out] init_struct: the initialization data needed to initialize DMAMUX request generator channel
     \retval     none
 */
 void dmamux_gen_struct_para_init(dmamux_gen_parameter_struct *init_struct)
@@ -751,7 +751,7 @@ void dmamux_request_generator_init(dmamux_generator_channel_enum channelx, dmamu
     \param[out] none
     \retval     none
 */
-void dmamux_request_generator_chennel_enable(dmamux_generator_channel_enum channelx)
+void dmamux_request_generator_channel_enable(dmamux_generator_channel_enum channelx)
 {
     DMAMUX_RG_CHXCFG(channelx) |= DMAMUX_RG_CHXCFG_RGEN;
 }
@@ -764,7 +764,7 @@ void dmamux_request_generator_chennel_enable(dmamux_generator_channel_enum chann
     \param[out] none
     \retval     none
 */
-void dmamux_request_generator_chennel_disable(dmamux_generator_channel_enum channelx)
+void dmamux_request_generator_channel_disable(dmamux_generator_channel_enum channelx)
 {
     DMAMUX_RG_CHXCFG(channelx) &= (~DMAMUX_RG_CHXCFG_RGEN);
 }
@@ -803,7 +803,7 @@ void dmamux_synchronization_polarity_config(dmamux_multiplexer_channel_enum chan
 void dmamux_request_forward_number_config(dmamux_multiplexer_channel_enum channelx, uint32_t number)
 {
     DMAMUX_RM_CHXCFG(channelx) &= ~DMAMUX_RM_CHXCFG_NBR;
-    DMAMUX_RM_CHXCFG(channelx) |= (number - 1U);
+    DMAMUX_RM_CHXCFG(channelx) |= RM_CHXCFG_NBR(number - 1U);
 }
 
 /*!
@@ -935,7 +935,7 @@ void dmamux_trigger_polarity_config(dmamux_generator_channel_enum channelx, uint
 void dmamux_request_generate_number_config(dmamux_generator_channel_enum channelx, uint32_t number)
 {
     DMAMUX_RG_CHXCFG(channelx) &= ~DMAMUX_RG_CHXCFG_NBRG;
-    DMAMUX_RG_CHXCFG(channelx) |= (number - 1U);
+    DMAMUX_RG_CHXCFG(channelx) |= RG_CHXCFG_NBRG(number - 1U);
 }
 
 /*!

@@ -2,11 +2,11 @@
     \file    usb_iap_core.h
     \brief   the header file of IAP driver
 
-    \version 2021-08-04, V1.0.0, firmware for GD32L23x
+    \version 2023-06-21, V1.1.0, firmware for GD32L23x
 */
 
 /*
-    Copyright (c) 2021, GigaDevice Semiconductor Inc.
+    Copyright (c) 2023, GigaDevice Semiconductor Inc.
 
     Redistribution and use in source and binary forms, with or without modification,
 are permitted provided that the following conditions are met:
@@ -50,7 +50,8 @@ OF SUCH DAMAGE.
 
 typedef void (*app_func)(void);
 
-typedef struct {
+typedef struct
+{
     __ALIGNED(2) uint8_t reportID;
     __ALIGNED(2) uint8_t report_buf[IAP_OUT_PACKET + 1U];
     __ALIGNED(2) uint8_t option_byte[IAP_IN_PACKET];
@@ -58,7 +59,6 @@ typedef struct {
     /* state machine variables */
     __ALIGNED(2)  uint8_t dev_status[IAP_IN_PACKET];
     __ALIGNED(2)  uint8_t bin_addr[IAP_IN_PACKET];
-
 
     __ALIGNED(2) uint8_t flag;
 

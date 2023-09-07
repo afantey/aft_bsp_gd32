@@ -2,11 +2,11 @@
     \file    audio_core.h
     \brief   the header file of USB audio device class core functions
 
-    \version 2021-08-04, V1.0.0, firmware for GD32L23x
+    \version 2023-06-21, V1.1.0, firmware for GD32L23x
 */
 
 /*
-    Copyright (c) 2021, GigaDevice Semiconductor Inc.
+    Copyright (c) 2023, GigaDevice Semiconductor Inc.
 
     Redistribution and use in source and binary forms, with or without modification,
 are permitted provided that the following conditions are met:
@@ -39,87 +39,95 @@ OF SUCH DAMAGE.
 
 #define FORMAT_24BIT(x)                              (uint8_t)(x);(uint8_t)((x) >> 8);(uint8_t)((x) >> 16)
 
-/* audio_freq * data_size (2 bytes) * num_channels (stereo: 2) */
-#define DEFAULT_OUT_BIT_RESOLUTION                   16U
-#define DEFAULT_OUT_CHANNEL_NBR                      2U /* mono = 1, stereo = 2 */
-#define AUDIO_OUT_PACKET                             (uint32_t)(((USBD_SPEAKER_FREQ * \
-                                                                 (DEFAULT_OUT_BIT_RESOLUTION / 8U) *\
-                                                                  DEFAULT_OUT_CHANNEL_NBR) / 1000U))
-
-/* number of sub-packets in the audio transfer buffer. you can modify this value but always make sure
+/* number of sub-packets in the audio transfer buffer. user can modify this value but always make sure
    that it is an even number and higher than 3 */
-#define OUT_PACKET_NUM                               4U
+#define OUT_PACKET_NUM                            120U
 
 /* total size of the audio transfer buffer */
-#define OUT_BUF_MARGIN                               4U
-#define TOTAL_OUT_BUF_SIZE                           ((uint32_t)((AUDIO_OUT_PACKET + OUT_BUF_MARGIN) * OUT_PACKET_NUM))
+#define OUT_BUF_MARGIN                            0U
+#define TOTAL_OUT_BUF_SIZE                        ((uint32_t)((SPEAKER_OUT_PACKET + OUT_BUF_MARGIN) * OUT_PACKET_NUM))
 
-#define AUDIO_CONFIG_DESC_SET_LEN                    109U
-#define AUDIO_INTERFACE_DESC_SIZE                    9U
+#define AD_CONFIG_DESC_SET_LEN                    (sizeof(usb_desc_config_set))
+#define AD_INTERFACE_DESC_SIZE                    9U
 
-#define USB_AUDIO_DESC_SIZ                           0x09U
-#define AUDIO_STANDARD_EP_DESC_SIZE                  0x09U
-#define AUDIO_STREAMING_EP_DESC_SIZE                 0x07U
+#define USB_AD_DESC_SIZ                           0x09U
+#define AD_STANDARD_EP_DESC_SIZE                  0x09U
+#define AD_STREAMING_EP_DESC_SIZE                 0x07U
 
 /* audio interface class code */
-#define USB_CLASS_AUDIO                              0x01U
+#define USB_CLASS_AUDIO                           0x01U
 
 /* audio interface subclass codes */
-#define AUDIO_SUBCLASS_CONTROL                       0x01U
-#define AUDIO_SUBCLASS_AUDIOSTREAMING                0x02U
-#define AUDIO_SUBCLASS_MIDISTREAMING                 0x03U
+#define AD_SUBCLASS_CONTROL                       0x01U
+#define AD_SUBCLASS_AUDIOSTREAMING                0x02U
+#define AD_SUBCLASS_MIDISTREAMING                 0x03U
 
 /* audio interface protocol codes */
-#define AUDIO_PROTOCOL_UNDEFINED                     0x00U
-#define AUDIO_STREAMING_GENERAL                      0x01U
-#define AUDIO_STREAMING_FORMAT_TYPE                  0x02U
+#define AD_PROTOCOL_UNDEFINED                     0x00U
+#define AD_STREAMING_GENERAL                      0x01U
+#define AD_STREAMING_FORMAT_TYPE                  0x02U
 
 /* audio class-specific descriptor types */
-#define AUDIO_DESCTYPE_UNDEFINED                     0x20U
-#define AUDIO_DESCTYPE_DEVICE                        0x21U
-#define AUDIO_DESCTYPE_CONFIGURATION                 0x22U
-#define AUDIO_DESCTYPE_STRING                        0x23U
-#define AUDIO_DESCTYPE_INTERFACE                     0x24U
-#define AUDIO_DESCTYPE_ENDPOINT                      0x25U
+#define AD_DESCTYPE_UNDEFINED                     0x20U
+#define AD_DESCTYPE_DEVICE                        0x21U
+#define AD_DESCTYPE_CONFIGURATION                 0x22U
+#define AD_DESCTYPE_STRING                        0x23U
+#define AD_DESCTYPE_INTERFACE                     0x24U
+#define AD_DESCTYPE_ENDPOINT                      0x25U
 
 /* audio control interface descriptor subtypes */
-#define AUDIO_CONTROL_HEADER                         0x01U
-#define AUDIO_CONTROL_INPUT_TERMINAL                 0x02U
-#define AUDIO_CONTROL_OUTPUT_TERMINAL                0x03U
-#define AUDIO_CONTROL_MIXER_UNIT                     0x04U
-#define AUDIO_CONTROL_SELECTOR_UNIT                  0x05U
-#define AUDIO_CONTROL_FEATURE_UNIT                   0x06U
-#define AUDIO_CONTROL_PROCESSING_UNIT                0x07U
-#define AUDIO_CONTROL_EXTENSION_UNIT                 0x08U
+#define AD_CONTROL_HEADER                         0x01U
+#define AD_CONTROL_INPUT_TERMINAL                 0x02U
+#define AD_CONTROL_OUTPUT_TERMINAL                0x03U
+#define AD_CONTROL_MIXER_UNIT                     0x04U
+#define AD_CONTROL_SELECTOR_UNIT                  0x05U
+#define AD_CONTROL_FEATURE_UNIT                   0x06U
+#define AD_CONTROL_PROCESSING_UNIT                0x07U
+#define AD_CONTROL_EXTENSION_UNIT                 0x08U
 
-#define AUDIO_INPUT_TERMINAL_DESC_SIZE               0x0CU
-#define AUDIO_OUTPUT_TERMINAL_DESC_SIZE              0x09U
-#define AUDIO_STREAMING_INTERFACE_DESC_SIZE          0x07U
+#define AD_INPUT_TERMINAL_DESC_SIZE               0x0CU
+#define AD_OUTPUT_TERMINAL_DESC_SIZE              0x09U
+#define AD_STREAMING_INTERFACE_DESC_SIZE          0x07U
 
-#define AUDIO_CONTROL_MUTE                           0x0001U
+#define AD_CONTROL_MUTE                           0x01U
+#define AD_CONTROL_VOLUME                         0x02U
 
-#define AUDIO_FORMAT_TYPE_I                          0x01U
-#define AUDIO_FORMAT_TYPE_III                        0x03U
+#define AD_FORMAT_TYPE_I                          0x01U
+#define AD_FORMAT_TYPE_III                        0x03U
 
-#define USB_ENDPOINT_TYPE_ISOCHRONOUS                0x01U
-#define AUDIO_ENDPOINT_GENERAL                       0x01U
+#define USB_ENDPOINT_TYPE_ISOCHRONOUS             0x01U
+#define AD_ENDPOINT_GENERAL                       0x01U
 
-#define AUDIO_REQ_GET_CUR                            0x81U
-#define AUDIO_REQ_SET_CUR                            0x01U
+#define AD_REQ_UNDEFINED                          0x00U
+#define AD_REQ_SET_CUR                            0x01U
+#define AD_REQ_GET_CUR                            0x81U
+#define AD_REQ_SET_MIN                            0x02U
+#define AD_REQ_GET_MIN                            0x82U
+#define AD_REQ_SET_MAX                            0x03U
+#define AD_REQ_GET_MAX                            0x83U
+#define AD_REQ_SET_RES                            0x04U
+#define AD_REQ_GET_RES                            0x84U
+#define AD_REQ_SET_MEM                            0x05U
+#define AD_REQ_GET_MEM                            0x85U
+#define AD_REQ_GET_STAT                           0xFFU
 
-#define AUDIO_OUT_STREAMING_CTRL                     0x02U
+#define AD_OUT_STREAMING_CTRL                     0x02U
+#define AD_IN_STREAMING_CTRL                      0x05U
 
-#define PACKET_SIZE(freq)             (((freq) * 2U) * 2U / 1000U)
+/* audio stream interface number */
+enum
+{
+    SPEAK_INTERFACE_COUNT,
+    CONFIG_DESC_AS_ITF_COUNT,
+};
 
-#define AUDIO_PACKET_SIZE(frq)        (uint8_t)(PACKET_SIZE(frq) & 0xFFU), \
-    (uint8_t)((PACKET_SIZE(frq) >> 8U) & 0xFFU)
-
-#define SAMPLE_FREQ(frq)              (uint8_t)(frq), (uint8_t)((frq) >> 8U), \
-    (uint8_t)((frq) >> 16U)
+#define AC_ITF_TOTAL_LEN                          (sizeof(usb_desc_AC_itf) + CONFIG_DESC_AS_ITF_COUNT*(sizeof(usb_desc_input_terminal) + \
+                                                  sizeof(usb_desc_mono_feature_unit) + sizeof(usb_desc_output_terminal)))
 
 #pragma pack(1)
 
-typedef struct {
+typedef struct
+{
     usb_desc_header header;           /*!< descriptor header, including type and size */
     uint8_t  bDescriptorSubtype;      /*!< header descriptor subtype */
     uint16_t bcdADC;                  /*!< audio device class specification release number in binary-coded decimal */
@@ -128,7 +136,8 @@ typedef struct {
     uint8_t  baInterfaceNr;           /*!< interface number of the streaming interfaces */
 } usb_desc_AC_itf;
 
-typedef struct {
+typedef struct
+{
     usb_desc_header header;           /*!< descriptor header, including type and size */
     uint8_t  bDescriptorSubtype;      /*!< AS_GENERAL descriptor subtype */
     uint8_t  bTerminalLink;           /*!< the terminal ID */
@@ -136,7 +145,8 @@ typedef struct {
     uint16_t wFormatTag;              /*!< the audio data format */
 } usb_desc_AS_itf;
 
-typedef struct {
+typedef struct
+{
     usb_desc_header header;           /*!< descriptor header, including type and size */
     uint8_t  bDescriptorSubtype;      /*!< INPUT_TERMINAL descriptor subtype. */
     uint8_t  bTerminalID;             /*!< constant uniquely identifying the terminal within the audio function */
@@ -148,7 +158,8 @@ typedef struct {
     uint8_t  iTerminal;               /*!< index of a string descriptor */
 } usb_desc_input_terminal;
 
-typedef struct {
+typedef struct
+{
     usb_desc_header header;           /*!< descriptor header, including type and size */
     uint8_t  bDescriptorSubtype;      /*!< OUTPUT_TERMINAL descriptor subtype */
     uint8_t  bTerminalID;             /*!< constant uniquely identifying the terminal within the audio function */
@@ -158,7 +169,8 @@ typedef struct {
     uint8_t  iTerminal;               /*!< index of a string descriptor */
 } usb_desc_output_terminal;
 
-typedef struct {
+typedef struct
+{
     usb_desc_header header;           /*!< descriptor header, including type and size */
     uint8_t  bDescriptorSubtype;      /*!< FEATURE_UNIT descriptor subtype */
     uint8_t  bUnitID;                 /*!< constant uniquely identifying the unit within the audio function */
@@ -169,7 +181,8 @@ typedef struct {
     uint8_t  iFeature;                /*!< index of a string descriptor */
 } usb_desc_mono_feature_unit;
 
-typedef struct {
+typedef struct
+{
     usb_desc_header header;           /*!< descriptor header, including type and size */
     uint8_t  bDescriptorSubtype;      /*!< FEATURE_UNIT descriptor subtype */
     uint8_t  bUnitID;                 /*!< constant uniquely identifying the unit within the audio function */
@@ -181,7 +194,8 @@ typedef struct {
     uint8_t  iFeature;                /*!< index of a string descriptor */
 } usb_desc_stereo_feature_unit;
 
-typedef struct {
+typedef struct
+{
     usb_desc_header header;           /*!< descriptor header, including type and size */
     uint8_t  bDescriptorSubtype;      /*!< FORMAT_TYPE descriptor subtype */
     uint8_t  bFormatType;             /*!< constant identifying the format type */
@@ -192,7 +206,8 @@ typedef struct {
     uint8_t  bSamFreq[3];             /*!< sampling frequency ns in Hz for this isochronous data endpoint */
 } usb_desc_format_type;
 
-typedef struct {
+typedef struct
+{
     usb_desc_header header;           /*!< descriptor header, including type and size */
     uint8_t  bEndpointAddress;        /*!< the address of the endpoint */
     uint8_t  bmAttributes;            /*!< transfer type and synchronization type */
@@ -202,7 +217,8 @@ typedef struct {
     uint8_t  bSynchAddress;           /*!< reset to 0 */
 } usb_desc_std_ep;
 
-typedef struct {
+typedef struct
+{
     usb_desc_header header;           /*!< descriptor header, including type and size */
     uint8_t  bDescriptorSubtype;      /*!< EP_GENERAL descriptor subtype */
     uint8_t  bmAttributes;            /*!< transfer type and synchronization type */
@@ -212,8 +228,9 @@ typedef struct {
 
 #pragma pack()
 
-/* USB configuration descriptor struct */
-typedef struct {
+/* USB configuration descriptor structure */
+typedef struct
+{
     usb_desc_config             config;
     usb_desc_itf                std_itf;
     usb_desc_AC_itf             ac_itf;
@@ -228,11 +245,18 @@ typedef struct {
     usb_desc_AS_ep              as_endpoint;
 } usb_desc_config_set;
 
-typedef struct {
+typedef struct
+{
     /* main buffer for audio data out transfers and its relative pointers */
     uint8_t  isoc_out_buff[TOTAL_OUT_BUF_SIZE * 2U];
-    uint8_t *isoc_out_wrptr;
-    uint8_t *isoc_out_rdptr;
+    uint8_t* isoc_out_wrptr;
+    uint8_t* isoc_out_rdptr;
+
+    uint16_t buf_free_size;
+    uint16_t dam_tx_len;
+
+    /* usb receive buffer */
+    uint8_t usb_rx_buffer[SPEAKER_OUT_MAX_PACKET];
 
     /* main buffer for audio control requests transfers and its relative variables */
     __ALIGNED(2) uint8_t  audioctl[64];

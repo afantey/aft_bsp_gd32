@@ -2,11 +2,11 @@
     \file    usb_ch9_std.h
     \brief   USB 2.0 standard defines
 
-    \version 2021-08-04, V1.0.0, firmware for GD32L23x
+    \version 2023-06-21, V1.1.0, firmware for GD32L23x
 */
 
 /*
-    Copyright (c) 2021, GigaDevice Semiconductor Inc.
+    Copyright (c) 2023, GigaDevice Semiconductor Inc.
 
     Redistribution and use in source and binary forms, with or without modification,
 are permitted provided that the following conditions are met:
@@ -65,7 +65,8 @@ OF SUCH DAMAGE.
 #define USB_STATUS_SELF_POWERED      1U           /*!< USB is in self powered status */
 
 /* bit 4..0 of bmRequestType: recipient type */
-enum _usb_recp_type {
+enum _usb_recp_type 
+{
     USB_RECPTYPE_DEV  = 0x0U,                     /*!< USB device request type */
     USB_RECPTYPE_ITF  = 0x1U,                     /*!< USB interface request type */
     USB_RECPTYPE_EP   = 0x2U,                     /*!< USB endpoint request type */
@@ -73,7 +74,8 @@ enum _usb_recp_type {
 };
 
 /* bRequest value */
-enum _usb_request {
+enum _usb_request
+{
     USB_GET_STATUS        = 0x0U,                 /*!< USB get status request */
     USB_CLEAR_FEATURE     = 0x1U,                 /*!< USB clear feature request */
     USB_RESERVED2         = 0x2U,                 /*!< USB reserved2 */
@@ -90,7 +92,8 @@ enum _usb_request {
 };
 
 /* descriptor types of USB specifications */
-enum _usb_desctype {
+enum _usb_desctype
+{
     USB_DESCTYPE_DEV              = 0x1U,         /*!< USB device descriptor type */
     USB_DESCTYPE_CONFIG           = 0x2U,         /*!< USB configuration descriptor type */
     USB_DESCTYPE_STR              = 0x3U,         /*!< USB string descriptor type */
@@ -104,30 +107,32 @@ enum _usb_desctype {
 
 /* USB endpoint descriptor bmAttributes bit definitions */
 /* bits 1..0 : transfer type */
-enum _usbx_type {
-    USB_EP_ATTR_CTL  = 0x0U,                      /*!< USB endpoint control attributes*/
-    USB_EP_ATTR_ISO  = 0x1U,                      /*!< USB endpoint isochronous attributes*/
-    USB_EP_ATTR_BULK = 0x2U,                      /*!< USB endpoint bulk attributes*/
-    USB_EP_ATTR_INT  = 0x3U                       /*!< USB endpoint interrupt attributes*/
+enum _usbx_type 
+{
+    USB_EP_ATTR_CTL  = 0x0U,                      /*!< USB endpoint control attributes */
+    USB_EP_ATTR_ISO  = 0x1U,                      /*!< USB endpoint isochronous attributes */
+    USB_EP_ATTR_BULK = 0x2U,                      /*!< USB endpoint bulk attributes */
+    USB_EP_ATTR_INT  = 0x3U                       /*!< USB endpoint interrupt attributes */
 };
 
 /* bits 3..2 : Sync type (only if ISOCHRONOUS) */
-#define USB_EP_ATTR_NOSYNC                 0x00U  /*!< USB endpoint no SYNC attributes*/
-#define USB_EP_ATTR_ASYNC                  0x04U  /*!< USB endpoint ASYNC attributes*/
-#define USB_EP_ATTR_ADAPTIVE               0x08U  /*!< USB endpoint adaptive attributes*/
-#define USB_EP_ATTR_SYNC                   0x0CU  /*!< USB endpoint SYNC attributes*/
-#define USB_EP_ATTR_SYNCTYPE               0x0CU  /*!< USB endpoint SYNC type attributes*/
+#define USB_EP_ATTR_NOSYNC                 0x00U  /*!< USB endpoint no SYNC attributes */
+#define USB_EP_ATTR_ASYNC                  0x04U  /*!< USB endpoint ASYNC attributes */
+#define USB_EP_ATTR_ADAPTIVE               0x08U  /*!< USB endpoint adaptive attributes */
+#define USB_EP_ATTR_SYNC                   0x0CU  /*!< USB endpoint SYNC attributes */
+#define USB_EP_ATTR_SYNCTYPE               0x0CU  /*!< USB endpoint SYNC type attributes */
 
 /* bits 5..4 : usage type (only if ISOCHRONOUS) */
-#define USB_EP_ATTR_DATA                   0x00U  /*!< USB endpoint data attributes*/
-#define USB_EP_ATTR_FEEDBACK               0x10U  /*!< USB endpoint feedback attributes*/
-#define USB_EP_ATTR_IMPLICIT_FEEDBACK_DATA 0x20U  /*!< USB endpoint implicit feedback attributes*/
-#define USB_EP_ATTR_USAGETYPE              0x30U  /*!< USB endpoint usage type attributes*/
+#define USB_EP_ATTR_DATA                   0x00U  /*!< USB endpoint data attributes */
+#define USB_EP_ATTR_FEEDBACK               0x10U  /*!< USB endpoint feedback attributes */
+#define USB_EP_ATTR_IMPLICIT_FEEDBACK_DATA 0x20U  /*!< USB endpoint implicit feedback attributes */
+#define USB_EP_ATTR_USAGETYPE              0x30U  /*!< USB endpoint usage type attributes */
 
 #pragma pack(1)
 
 /* USB standard device request structure */
-typedef struct _usb_req {
+typedef struct _usb_req
+{
     uint8_t           bmRequestType;              /*!< type of request */
     uint8_t           bRequest;                   /*!< request of setup packet */
     uint16_t          wValue;                     /*!< value of setup packet */
@@ -136,19 +141,21 @@ typedef struct _usb_req {
 } usb_req;
 
 /* USB setup packet definition */
-typedef union _usb_setup {
+typedef union _usb_setup
+{
     uint8_t data[8];                              /*!< USB setup data */
-
     usb_req req;                                  /*!< USB setup request */
 } usb_setup;
 
 /* USB descriptor definition */
-typedef struct _usb_desc_header {
+typedef struct _usb_desc_header
+{
     uint8_t bLength;                              /*!< size of the descriptor */
     uint8_t bDescriptorType;                      /*!< type of the descriptor */
 } usb_desc_header;
 
-typedef struct _usb_desc_dev {
+typedef struct _usb_desc_dev 
+{
     usb_desc_header header;                       /*!< descriptor header, including type and size */
     uint16_t bcdUSB;                              /*!< BCD of the supported USB specification */
     uint8_t  bDeviceClass;                        /*!< USB device class */
@@ -164,7 +171,8 @@ typedef struct _usb_desc_dev {
     uint8_t  bNumberConfigurations;               /*!< total number of configurations supported by the device */
 } usb_desc_dev;
 
-typedef struct _usb_desc_config {
+typedef struct _usb_desc_config
+{
     usb_desc_header header;                       /*!< descriptor header, including type and size */
     uint16_t wTotalLength;                        /*!< size of the configuration descriptor header, and all sub descriptors inside the configuration */
     uint8_t  bNumInterfaces;                      /*!< total number of interfaces in the configuration */
@@ -174,7 +182,8 @@ typedef struct _usb_desc_config {
     uint8_t  bMaxPower;                           /*!< maximum power consumption of the device while in the current configuration */
 } usb_desc_config;
 
-typedef struct _usb_desc_itf {
+typedef struct _usb_desc_itf
+{
     usb_desc_header header;                       /*!< descriptor header, including type and size */
     uint8_t bInterfaceNumber;                     /*!< index of the interface in the current configuration */
     uint8_t bAlternateSetting;                    /*!< alternate setting for the interface number */
@@ -185,7 +194,8 @@ typedef struct _usb_desc_itf {
     uint8_t iInterface;                           /*!< index of the string descriptor describing the interface */
 } usb_desc_itf;
 
-typedef struct _usb_desc_ep {
+typedef struct _usb_desc_ep
+{
     usb_desc_header header;                       /*!< descriptor header, including type and size */
     uint8_t  bEndpointAddress;                    /*!< logical address of the endpoint */
     uint8_t  bmAttributes;                        /*!< endpoint attribute */
@@ -193,13 +203,15 @@ typedef struct _usb_desc_ep {
     uint8_t  bInterval;                           /*!< polling interval in milliseconds for the endpoint if it is an INTERRUPT or ISOCHRONOUS type */
 } usb_desc_ep;
 
-typedef struct _usb_desc_LANGID {
-    usb_desc_header header;                       /*!< descriptor header, including type and size. */
+typedef struct _usb_desc_LANGID
+{
+    usb_desc_header header;                       /*!< descriptor header, including type and size */
     uint16_t wLANGID;                             /*!< LANGID code */
 } usb_desc_LANGID;
 
-typedef struct _usb_desc_str {
-    usb_desc_header header;                       /*!< descriptor header, including type and size. */
+typedef struct _usb_desc_str 
+{
+    usb_desc_header header;                       /*!< descriptor header, including type and size */
     uint16_t unicode_string[64];                  /*!< unicode string data */
 } usb_desc_str;
 

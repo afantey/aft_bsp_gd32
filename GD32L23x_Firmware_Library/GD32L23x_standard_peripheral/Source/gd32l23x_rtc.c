@@ -2,11 +2,11 @@
     \file    gd32l23x_rtc.c
     \brief   RTC driver
 
-    \version 2021-08-04, V1.0.0, firmware for GD32L23x
+    \version 2023-06-21, V1.1.0, firmware for GD32L23x
 */
 
 /*
-    Copyright (c) 2021, GigaDevice Semiconductor Inc.
+    Copyright (c) 2023, GigaDevice Semiconductor Inc.
 
     Redistribution and use in source and binary forms, with or without modification,
 are permitted provided that the following conditions are met:
@@ -890,7 +890,7 @@ void rtc_flag_clear(uint32_t flag)
     \brief      select the RTC output pin
     \param[in]  outputpin: specify the rtc output pin is PC13 or not
       \arg        RTC_OUT_PC13: the rtc output pin is PC13
-      \arg        RTC_OUT_PB2: the rtc output pin is PB2
+      \arg        RTC_OUT_PB2_PB14: the rtc output pin is PB2 or PB14
     \param[out] none
     \retval     none
 */
@@ -1184,7 +1184,7 @@ ErrStatus rtc_wakeup_clock_set(uint8_t wakeup_clock)
     RTC_WPK = RTC_UNLOCK_KEY1;
     RTC_WPK = RTC_UNLOCK_KEY2;
 
-    /* only when RTC_CTL_WTEN=0 and RTC_STAT_WTWF=1 can write RTC_CTL[2��0] */
+    /* only when RTC_CTL_WTEN=0 and RTC_STAT_WTWF=1 can write RTC_CTL */
     /* wait until the WTWF flag to be set */
     do {
         flag_status = RTC_STAT & RTC_STAT_WTWF;

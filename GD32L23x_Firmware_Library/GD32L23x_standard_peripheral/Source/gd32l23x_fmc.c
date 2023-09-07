@@ -2,11 +2,11 @@
     \file    gd32l23x_fmc.c
     \brief   FMC driver
 
-    \version 2021-08-04, V1.0.0, firmware for GD32L23x
+    \version 2023-06-21, V1.1.0, firmware for GD32L23x
 */
 
 /*
-    Copyright (c) 2021, GigaDevice Semiconductor Inc.
+    Copyright (c) 2023, GigaDevice Semiconductor Inc.
 
     Redistribution and use in source and binary forms, with or without modification,
 are permitted provided that the following conditions are met:
@@ -307,7 +307,8 @@ fmc_state_enum fmc_fast_program(uint32_t address, uint64_t data[])
 
         /* program the row data */
         for(index = 0U; index < DOUBLE_WORDS_CNT_IN_ROW; index++) {
-            REG64(address) = data[index];
+            REG32(address) = (uint32_t)(data[index] & 0x00000000FFFFFFFFU);
+            REG32(address + 4U) = (uint32_t)(data[index] >> 32U);
             address += 8U;
         }
 
@@ -756,7 +757,6 @@ FlagStatus fmc_flag_get(uint32_t flag)
       \arg        FMC_FLAG_PGAERR: FMC program alignment error flag
       \arg        FMC_FLAG_WPERR: FMC erase/program protection error flag
       \arg        FMC_FLAG_END: FMC end of operation flag
-      \arg        FMC_FLAG_SLP: FMC sleep or power down flag
     \param[out] none
     \retval     none
 */

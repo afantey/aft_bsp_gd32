@@ -2,11 +2,11 @@
     \file    gd32l23x_cmp.c
     \brief   CMP driver
 
-    \version 2021-08-04, V1.0.0, firmware for GD32L23x
+    \version 2023-06-21, V1.1.0, firmware for GD32L23x
 */
 
 /*
-    Copyright (c) 2021, GigaDevice Semiconductor Inc.
+    Copyright (c) 2023, GigaDevice Semiconductor Inc.
 
     Redistribution and use in source and binary forms, with or without modification,
 are permitted provided that the following conditions are met:
@@ -34,8 +34,9 @@ OF SUCH DAMAGE.
 
 #include "gd32l23x_cmp.h"
 
-#define CMP_MODE_DEFAULT                         ((uint32_t)0xFFFFCF83)         /*!< cmp mode default */
-#define CMP_OUTPUT_DEFAULT                       ((uint32_t)0xFFFFF0FF)         /*!< cmp output default */
+#define CMP_MODE_DEFAULT                         ((uint32_t)0xFFFFCF83)         /*!< CMP mode default */
+#define CMP_OUTPUT_DEFAULT                       ((uint32_t)0xFFFFF0FF)         /*!< CMP output default */
+
 /*!
     \brief      deinitialize comparator
     \param[in]  cmp_periph
@@ -47,9 +48,9 @@ OF SUCH DAMAGE.
 void cmp_deinit(uint32_t cmp_periph)
 {
     if(CMP0 == cmp_periph){
-        CMP0_CS &= ~(uint32_t)CMP0_CS_EN;
-    }else{
-        CMP1_CS &= ~(uint32_t)CMP1_CS_EN;
+        CMP0_CS &= ((uint32_t)0x00000000U);
+    }else if(CMP1 == cmp_periph){
+        CMP1_CS &= ((uint32_t)0x00000000U);
     }
 }
 
@@ -60,7 +61,7 @@ void cmp_deinit(uint32_t cmp_periph)
       \arg        CMP1: comparator 1
     \param[in]  operating_mode
       \arg        CMP_HIGHSPEED: high speed mode
-      \arg        CMP_MEDIUMSPEED: medium speed mode
+      \arg        CMP_MIDDLESPEED: middle speed mode
       \arg        CMP_LOWSPEED: low speed mode
     \param[in]  inverting_input
       \arg        CMP_1_4VREFINT: VREFINT *1/4 input
@@ -73,7 +74,7 @@ void cmp_deinit(uint32_t cmp_periph)
     \param[in]  output_hysteresis
       \arg        CMP_HYSTERESIS_NO: output no hysteresis
       \arg        CMP_HYSTERESIS_LOW: output low hysteresis
-      \arg        CMP_HYSTERESIS_MEDIUM: output medium hysteresis
+      \arg        CMP_HYSTERESIS_MIDDLE: output middle hysteresis
       \arg        CMP_HYSTERESIS_HIGH: output high hysteresis
     \param[out] none
     \retval     none
@@ -98,13 +99,13 @@ void cmp_mode_init(uint32_t cmp_periph, operating_mode_enum operating_mode, inve
 }
 
 /*!
-    \brief      Selecte the plus input for CMP1
+    \brief      select the plus input for CMP1
     \param[in]  plus_input
-      \arg        CMP1_PA3: selecte PA3 as plus input for CMP1
-      \arg        CMP1_PB4: selecte PB4 as plus input for CMP1
-      \arg        CMP1_PB5: selecte PB5 as plus input for CMP1
-      \arg        CMP1_PB6: selecte PB6 as plus input for CMP1
-      \arg        CMP1_PB7: selecte PB7 as plus input for CMP1
+      \arg        CMP1_PA3: select PA3 as plus input for CMP1
+      \arg        CMP1_PB4: select PB4 as plus input for CMP1
+      \arg        CMP1_PB5: select PB5 as plus input for CMP1
+      \arg        CMP1_PB6: select PB6 as plus input for CMP1
+      \arg        CMP1_PB7: select PB7 as plus input for CMP1
     \param[out] none
     \retval     none
 */
@@ -126,7 +127,6 @@ void cmp1_plus_selection(CMP1_plus_input_enum plus_input)
       \arg        CMP_OUTPUT_NONE: output no selection
       \arg        CMP_OUTPUT_TIMER1IC3: TIMER 1 channel3 input capture
       \arg        CMP_OUTPUT_TIMER2IC0: TIMER 2 channel0 input capture
-      \arg        CMP_OUTPUT_LPTIMERIC0_IC1: LPTIMER channel0 or channel1 input capture
     \param[in]  output_polarity
       \arg        CMP_OUTPUT_POLARITY_INVERTED: output is inverted
       \arg        CMP_OUTPUT_POLARITY_NOINVERTED: output is not inverted
@@ -183,11 +183,13 @@ void cmp_blanking_init(uint32_t cmp_periph, blanking_source_enum blanking_source
     uint32_t CMPx_CS = 0x00000000U;
     if(CMP0 == cmp_periph){
         CMPx_CS = CMP0_CS;
-        CMP0_CS |= (uint32_t)CS_CMP0BLK(blanking_source_selection);
+        CMPx_CS &= ~(uint32_t)CMP0_CS_BLK;
+        CMPx_CS |= (uint32_t)CS_CMP0BLK(blanking_source_selection);
         CMP0_CS = CMPx_CS;
     }else if(CMP1 == cmp_periph){
         CMPx_CS = CMP1_CS;
-        CMP1_CS |= (uint32_t)CS_CMP1BLK(blanking_source_selection);
+        CMPx_CS &= ~(uint32_t)CMP1_CS_BLK;
+        CMPx_CS |= (uint32_t)CS_CMP1BLK(blanking_source_selection);
         CMP1_CS = CMPx_CS;
     }else{
     }
@@ -277,6 +279,7 @@ void cmp_voltage_scaler_disable(uint32_t cmp_periph)
         CMP1_CS &= ~(uint32_t)CMP1_CS_SEN;
     }
 }
+
 /*!
     \brief      enable the scaler bridge
     \param[in]  none
@@ -291,6 +294,7 @@ void cmp_scaler_bridge_enable(uint32_t cmp_periph)
         CMP1_CS |= (uint32_t)CMP1_CS_BEN;
     }
 }
+
 /*!
     \brief      disable the scaler bridge
     \param[in]  none

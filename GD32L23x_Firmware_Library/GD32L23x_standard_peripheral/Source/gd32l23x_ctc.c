@@ -2,11 +2,11 @@
     \file    gd32l23x_ctc.c
     \brief   CTC driver
 
-    \version 2021-08-04, V1.0.0, firmware for GD32L23x
+    \version 2023-06-21, V1.1.0, firmware for GD32L23x
 */
 
 /*
-    Copyright (c) 2021, GigaDevice Semiconductor Inc.
+    Copyright (c) 2023, GigaDevice Semiconductor Inc.
 
     Redistribution and use in source and binary forms, with or without modification,
 are permitted provided that the following conditions are met:
@@ -79,8 +79,8 @@ void ctc_counter_disable(void)
 
 /*!
     \brief      configure the IRC48M trim value
-    \param[in]  ctc_trim_value: 8-bit IRC48M trim value
-      \arg        0x00 - 0x3F
+    \param[in]  ctc_trim_value: 7-bit IRC48M trim value
+      \arg        0x00 - 0x7F
     \param[out] none
     \retval     none
 */
@@ -139,7 +139,6 @@ void ctc_refsource_polarity_config(uint32_t polarity)
                 only one parameter can be selected which is shown as below:
       \arg        CTC_REFSOURCE_GPIO: GPIO is selected
       \arg        CTC_REFSOURCE_LXTAL: LXTAL is selected
-      \arg        CTC_REFSOURCE_USBSOF: USBD_SOF is selected
     \param[out] none
     \retval     none
 */

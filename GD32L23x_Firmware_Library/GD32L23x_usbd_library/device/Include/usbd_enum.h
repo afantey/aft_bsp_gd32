@@ -2,11 +2,11 @@
     \file    usbd_enum.h
     \brief   USB enumeration definitions
 
-    \version 2021-08-04, V1.0.0, firmware for GD32L23x
+    \version 2023-06-21, V1.1.0, firmware for GD32L23x
 */
 
 /*
-    Copyright (c) 2021, GigaDevice Semiconductor Inc.
+    Copyright (c) 2023, GigaDevice Semiconductor Inc.
 
     Redistribution and use in source and binary forms, with or without modification,
 are permitted provided that the following conditions are met:
@@ -36,37 +36,40 @@ OF SUCH DAMAGE.
 #define __USBD_ENUM_H
 
 #include "usbd_core.h"
-#include "usb_ch9_std.h"
 
 #ifndef NULL
-#define NULL                 0U
+    #define NULL                 0U
 #endif
 
 /* request state enumeration */
-typedef enum _usb_reqsta {
+typedef enum _usb_reqsta 
+{
     REQ_SUPP     = 0x0U,                         /* supported request */
     REQ_NOTSUPP  = 0x1U                          /* unsupported request */
 } usb_reqsta;
 
 /* string descriptor index enumeration */
-enum _str_index {
+enum _str_index
+{
     STR_IDX_LANGID                = 0x0U,        /* language ID string index */
     STR_IDX_MFC                   = 0x1U,        /* manufacturer string index */
     STR_IDX_PRODUCT               = 0x2U,        /* product string index */
     STR_IDX_SERIAL                = 0x3U,        /* serial string index */
     STR_IDX_CONFIG                = 0x4U,        /* configuration string index */
     STR_IDX_ITF                   = 0x5U,        /* interface string index */
-    STR_IDX_MAX                   = 0x6U        /* string index max value */
+    STR_IDX_MAX                   = 0x8U         /* string index max value */
 };
 
 /* PWR status enumeration */
-typedef enum {
+typedef enum 
+{
     USB_PWRSTA_SELF_POWERED       = 0x1U,        /* USB is in self powered status */
     USB_PWRSTA_REMOTE_WAKEUP      = 0x2U,        /* USB is in remote wakeup status */
 } usb_pwrsta;
 
 /* USB endpoint feature enumeration */
-typedef enum {
+typedef enum
+{
     USB_FEATURE_EP_HALT           = 0x0U,        /* USB has endpoint halt feature */
     USB_FEATURE_REMOTE_WAKEUP     = 0x1U,        /* USB has endpoint remote wakeup feature */
     USB_FEATURE_TEST_MODE         = 0x2U         /* USB has endpoint test mode feature */
@@ -86,7 +89,7 @@ typedef enum {
 
 /* USB device exported macros */
 #define BYTE_SWAP(addr)      (((uint16_t)(*((uint8_t *)(addr)))) + \
-                              (uint16_t)(((uint16_t)(*(((uint8_t *)(addr)) + 1U))) << 8U))
+                             (uint16_t)(((uint16_t)(*(((uint8_t *)(addr)) + 1U))) << 8U))
 #define BYTE_LOW(x)          ((uint8_t)((x) & 0x00FFU))
 #define BYTE_HIGH(x)         ((uint8_t)(((x) & 0xFF00U) >> 8U))
 

@@ -2,11 +2,11 @@
     \file    gd32l23x_rcu.h
     \brief   definitions for the RCU
 
-    \version 2021-08-04, V1.0.0, firmware for GD32L23x
+    \version 2023-06-21, V1.1.0, firmware for GD32L23x
 */
 
 /*
-    Copyright (c) 2021, GigaDevice Semiconductor Inc.
+    Copyright (c) 2023, GigaDevice Semiconductor Inc.
 
     Redistribution and use in source and binary forms, with or without modification,
 are permitted provided that the following conditions are met:
@@ -195,14 +195,14 @@ OF SUCH DAMAGE.
 #define RCU_BDCTL_LXTALSTB          BIT(1)                    /*!< external low-speed oscillator stabilization */
 #define RCU_BDCTL_LXTALBPS          BIT(2)                    /*!< LXTAL bypass mode enable */
 #define RCU_BDCTL_LXTALDRI          BITS(3,4)                 /*!< LXTAL drive capability */
-#define RCU_BDCTL_RTCSRC            BITS(8,9)                 /*!< RTC clock entry selection */
+#define RCU_BDCTL_RTCSRC            BITS(8,9)                 /*!< RTC/SLCD clock entry selection */
 #define RCU_BDCTL_RTCEN             BIT(15)                   /*!< RTC clock enable */
 #define RCU_BDCTL_BKPRST            BIT(16)                   /*!< backup domain reset */
 
 /* RCU_RSTSCK */
 #define RCU_RSTSCK_IRC32KEN         BIT(0)                    /*!< IRC32K enable */
 #define RCU_RSTSCK_IRC32KSTB        BIT(1)                    /*!< IRC32K stabilization */
-#define RCU_RSTSCK_V12RSTF          BIT(23)                   /*!< V12 domain power reset flag */
+#define RCU_RSTSCK_V11RSTF          BIT(23)                   /*!< V11 domain power reset flag */
 #define RCU_RSTSCK_RSTFC            BIT(24)                   /*!< reset flag clear */
 #define RCU_RSTSCK_EPRSTF           BIT(26)                   /*!< external pin reset flag */
 #define RCU_RSTSCK_PORRSTF          BIT(27)                   /*!< power reset flag */
@@ -385,22 +385,24 @@ typedef enum {
     RCU_CTCRST     = RCU_REGIDX_BIT(APB1RST_REG_OFFSET, 30U),            /*!< CTC reset */
 } rcu_periph_reset_enum;
 
-/* clock stabilization and peripheral reset flags */
+/* clock stabilization, peripheral reset and clock dection flags */
 typedef enum {
-    RCU_FLAG_IRC32KSTB    = RCU_REGIDX_BIT(RSTSCK_REG_OFFSET, 1U),       /*!< IRC32K stabilization flags */
-    RCU_FLAG_LXTALSTB     = RCU_REGIDX_BIT(BDCTL_REG_OFFSET, 1U),        /*!< LXTAL stabilization flags */
-    RCU_FLAG_IRC16MSTB    = RCU_REGIDX_BIT(CTL_REG_OFFSET, 1U),          /*!< IRC16M stabilization flags */
-    RCU_FLAG_HXTALSTB     = RCU_REGIDX_BIT(CTL_REG_OFFSET, 17U),         /*!< HXTAL stabilization flags */
-    RCU_FLAG_IRC48MSTB    = RCU_REGIDX_BIT(CTL_REG_OFFSET, 21U),         /*!< IRC48M stabilization flags */
-    RCU_FLAG_PLLSTB       = RCU_REGIDX_BIT(CTL_REG_OFFSET, 25U),         /*!< PLL stabilization flags */
+    RCU_FLAG_IRC32KSTB    = RCU_REGIDX_BIT(RSTSCK_REG_OFFSET, 1U),       /*!< IRC32K stabilization flag */
+    RCU_FLAG_LXTALSTB     = RCU_REGIDX_BIT(BDCTL_REG_OFFSET, 1U),        /*!< LXTAL stabilization flag */
+    RCU_FLAG_IRC16MSTB    = RCU_REGIDX_BIT(CTL_REG_OFFSET, 1U),          /*!< IRC16M stabilization flag */
+    RCU_FLAG_HXTALSTB     = RCU_REGIDX_BIT(CTL_REG_OFFSET, 17U),         /*!< HXTAL stabilization flag */
+    RCU_FLAG_IRC48MSTB    = RCU_REGIDX_BIT(CTL_REG_OFFSET, 21U),         /*!< IRC48M stabilization flag */
+    RCU_FLAG_PLLSTB       = RCU_REGIDX_BIT(CTL_REG_OFFSET, 25U),         /*!< PLL stabilization flag */
 
-    RCU_FLAG_V12RST       = RCU_REGIDX_BIT(RSTSCK_REG_OFFSET, 23U),      /*!< V12 reset flags */
-    RCU_FLAG_EPRST        = RCU_REGIDX_BIT(RSTSCK_REG_OFFSET, 26U),      /*!< EPR reset flags */
-    RCU_FLAG_PORRST       = RCU_REGIDX_BIT(RSTSCK_REG_OFFSET, 27U),      /*!< power reset flags */
-    RCU_FLAG_SWRST        = RCU_REGIDX_BIT(RSTSCK_REG_OFFSET, 28U),      /*!< SW reset flags */
-    RCU_FLAG_FWDGTRST     = RCU_REGIDX_BIT(RSTSCK_REG_OFFSET, 29U),      /*!< FWDGT reset flags */
-    RCU_FLAG_WWDGTRST     = RCU_REGIDX_BIT(RSTSCK_REG_OFFSET, 30U),      /*!< WWDGT reset flags */
-    RCU_FLAG_LPRST        = RCU_REGIDX_BIT(RSTSCK_REG_OFFSET, 31U)       /*!< LP reset flags */
+    RCU_FLAG_V11RST       = RCU_REGIDX_BIT(RSTSCK_REG_OFFSET, 23U),      /*!< V11 reset flag */
+    RCU_FLAG_EPRST        = RCU_REGIDX_BIT(RSTSCK_REG_OFFSET, 26U),      /*!< EPR reset flag */
+    RCU_FLAG_PORRST       = RCU_REGIDX_BIT(RSTSCK_REG_OFFSET, 27U),      /*!< power reset flag */
+    RCU_FLAG_SWRST        = RCU_REGIDX_BIT(RSTSCK_REG_OFFSET, 28U),      /*!< SW reset flag */
+    RCU_FLAG_FWDGTRST     = RCU_REGIDX_BIT(RSTSCK_REG_OFFSET, 29U),      /*!< FWDGT reset flag */
+    RCU_FLAG_WWDGTRST     = RCU_REGIDX_BIT(RSTSCK_REG_OFFSET, 30U),      /*!< WWDGT reset flag */
+    RCU_FLAG_LPRST        = RCU_REGIDX_BIT(RSTSCK_REG_OFFSET, 31U),      /*!< LP reset flag */
+
+    RCU_FLAG_LXTALCMD     = RCU_REGIDX_BIT(CTL_REG_OFFSET, 23U)          /*!< LXTAL clock failure detection flag */
 } rcu_flag_enum;
 
 /* clock stabilization and ckm interrupt flags */
@@ -709,12 +711,12 @@ typedef enum {
 #define RCU_LXTAL_MED_HIGHDRI       BDCTL_LXTALDRI(2)                   /*!< medium high driving capability */
 #define RCU_LXTAL_HIGHDRI           BDCTL_LXTALDRI(3)                   /*!< higher driving capability */
 
-/* RTC clock entry selection */
+/* RTC/SLCD clock entry selection */
 #define BDCTL_RTCSRC(regval)        (BITS(8,9) & ((uint32_t)(regval) << 8U))
 #define RCU_RTCSRC_NONE             BDCTL_RTCSRC(0)                     /*!< no clock selected */
-#define RCU_RTCSRC_LXTAL            BDCTL_RTCSRC(1)                     /*!< LXTAL selected as RTC source clock */
-#define RCU_RTCSRC_IRC32K           BDCTL_RTCSRC(2)                     /*!< IRC32K selected as RTC source clock */
-#define RCU_RTCSRC_HXTAL_DIV32      BDCTL_RTCSRC(3)                     /*!< HXTAL/32 selected as RTC source clock */
+#define RCU_RTCSRC_LXTAL            BDCTL_RTCSRC(1)                     /*!< LXTAL selected as RTC/SLCD source clock */
+#define RCU_RTCSRC_IRC32K           BDCTL_RTCSRC(2)                     /*!< IRC32K selected as RTC/SLCD source clock */
+#define RCU_RTCSRC_HXTAL_DIV32      BDCTL_RTCSRC(3)                     /*!< HXTAL/32 selected as RTC/SLCD source clock */
 
 /* CK_HXTAL divider previous PLL */
 #define CFG1_PREDV(regval)         (BITS(0,3) & ((uint32_t)(regval) << 0U))
@@ -857,7 +859,7 @@ void rcu_lpuart_clock_config(uint32_t ck_lpuart);
 void rcu_irc16mdiv_clock_config(uint32_t ck_irc16mdiv);
 /* configure the USBD clock source selection */
 void rcu_usbd_clock_config(uint32_t ck_usbd);
-/* configure the RTC clock source selection */
+/* configure the RTC/SLCD clock source selection */
 void rcu_rtc_clock_config(uint32_t rtc_clock_source);
 /* configure PLL source clocks pre-divider */
 void rcu_pll_source_ck_prediv_config(uint32_t pllsource_ck_prediv);
@@ -867,6 +869,36 @@ void rcu_lxtal_drive_capability_config(uint32_t lxtal_dricap);
 void rcu_lp_ldo_config(uint32_t lp_ldo_voltage);
 /* configure low power bandgap mode selection */
 void rcu_lp_bandgap_config(uint32_t lp_bandgap_clock);
+
+/* oscillator configuration functions */
+/* wait until oscillator stabilization flags is SET */
+ErrStatus rcu_osci_stab_wait(rcu_osci_type_enum osci);
+/* turn on the oscillator */
+void rcu_osci_on(rcu_osci_type_enum osci);
+/* turn off the oscillator */
+void rcu_osci_off(rcu_osci_type_enum osci);
+/* enable the oscillator bypass mode */
+void rcu_osci_bypass_mode_enable(rcu_osci_type_enum osci);
+/* disable the oscillator bypass mode */
+void rcu_osci_bypass_mode_disable(rcu_osci_type_enum osci);
+/* set the IRC16M adjust value */
+void rcu_irc16m_adjust_value_set(uint8_t irc16m_adjval);
+
+/* clock monitor configure functions */
+/* enable the HXTAL clock monitor */
+void rcu_hxtal_clock_monitor_enable(void);
+/* disable the HXTAL clock monitor */
+void rcu_hxtal_clock_monitor_disable(void);
+/* enable the LXTAL clock monitor */
+void rcu_lxtal_clock_monitor_enable(void);
+/* disable the LXTAL clock monitor */
+void rcu_lxtal_clock_monitor_disable(void);
+
+/* voltage configure and clock frequency get functions */
+/* unlock the voltage key */
+void rcu_voltage_key_unlock(void);
+/* get the system clock, bus and peripheral clock frequency */
+uint32_t rcu_clock_freq_get(rcu_clock_freq_enum clock);
 
 /* flag and interrupt functions */
 /* get the clock stabilization and periphral reset flags */
@@ -881,33 +913,5 @@ void rcu_interrupt_flag_clear(rcu_int_flag_clear_enum int_flag_clear);
 void rcu_interrupt_enable(rcu_int_enum stab_int);
 /* disable the stabilization interrupt */
 void rcu_interrupt_disable(rcu_int_enum stab_int);
-
-/* oscillator configuration functions */
-/* wait until oscillator stabilization flags is SET */
-ErrStatus rcu_osci_stab_wait(rcu_osci_type_enum osci);
-/* turn on the oscillator */
-void rcu_osci_on(rcu_osci_type_enum osci);
-/* turn off the oscillator */
-void rcu_osci_off(rcu_osci_type_enum osci);
-/* enable the oscillator bypass mode */
-void rcu_osci_bypass_mode_enable(rcu_osci_type_enum osci);
-/* disable the oscillator bypass mode */
-void rcu_osci_bypass_mode_disable(rcu_osci_type_enum osci);
-/* enable the HXTAL clock monitor */
-void rcu_hxtal_clock_monitor_enable(void);
-/* disable the HXTAL clock monitor */
-void rcu_hxtal_clock_monitor_disable(void);
-/* enable the LXTAL clock monitor */
-void rcu_lxtal_clock_monitor_enable(void);
-/* disable the LXTAL clock monitor */
-void rcu_lxtal_clock_monitor_disable(void);
-
-/* set the IRC16M adjust value */
-void rcu_irc16m_adjust_value_set(uint8_t irc16m_adjval);
-/* unlock the voltage key */
-void rcu_voltage_key_unlock(void);
-
-/* get the system clock, bus and peripheral clock frequency */
-uint32_t rcu_clock_freq_get(rcu_clock_freq_enum clock);
 
 #endif /* GD32L23X_RCU_H */

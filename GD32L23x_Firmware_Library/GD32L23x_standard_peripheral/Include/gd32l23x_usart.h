@@ -2,11 +2,11 @@
     \file    gd32l23x_usart.h
     \brief   definitions for the USART
 
-    \version 2021-08-04, V1.0.0, firmware for GD32L23x
+    \version 2023-06-21, V1.1.0, firmware for GD32L23x
 */
 
 /*
-    Copyright (c) 2021, GigaDevice Semiconductor Inc.
+    Copyright (c) 2023, GigaDevice Semiconductor Inc.
 
     Redistribution and use in source and binary forms, with or without modification,
 are permitted provided that the following conditions are met:
@@ -96,8 +96,6 @@ OF SUCH DAMAGE.
 #define USART_CTL1_TINV               BIT(17)                              /*!< TX pin level inversion */
 #define USART_CTL1_DINV               BIT(18)                              /*!< data bit level inversion */
 #define USART_CTL1_MSBF               BIT(19)                              /*!< most significant bit first */
-#define USART_CTL1_ABDEN              BIT(20)                              /*!< auto baud rate enable */
-#define USART_CTL1_ABDM               BITS(21,22)                          /*!< auto baud rate mode */
 #define USART_CTL1_RTEN               BIT(23)                              /*!< receiver timeout enable */
 #define USART_CTL1_ADDR               BITS(24,31)                          /*!< address of the USART terminal */
 
@@ -135,7 +133,6 @@ OF SUCH DAMAGE.
 #define USART_RT_BL                   BITS(24,31)                          /*!< block length */
 
 /* USARTx_CMD */
-#define USART_CMD_ABDCMD              BIT(0)                               /*!< auto baudrate detection command */
 #define USART_CMD_SBKCMD              BIT(1)                               /*!< send break command */
 #define USART_CMD_MMCMD               BIT(2)                               /*!< mute mode command */
 #define USART_CMD_RXFCMD              BIT(3)                               /*!< receive data flush command */
@@ -155,8 +152,6 @@ OF SUCH DAMAGE.
 #define USART_STAT_CTS                BIT(10)                              /*!< CTS level */
 #define USART_STAT_RTF                BIT(11)                              /*!< receiver timeout flag */
 #define USART_STAT_EBF                BIT(12)                              /*!< end of block flag */
-#define USART_STAT_ABDE               BIT(14)                              /*!< auto baudrate detection error */
-#define USART_STAT_ABDF               BIT(15)                              /*!< auto baudrate detection flag */
 #define USART_STAT_BSY                BIT(16)                              /*!< busy flag */
 #define USART_STAT_AMF                BIT(17)                              /*!< address match flag */
 #define USART_STAT_SBF                BIT(18)                              /*!< send break flag */
@@ -226,8 +221,6 @@ typedef enum {
     USART_FLAG_SB = USART_REGIDX_BIT(USART_STAT_REG_OFFSET, 18U),          /*!< send break flag */
     USART_FLAG_AM = USART_REGIDX_BIT(USART_STAT_REG_OFFSET, 17U),          /*!< ADDR match flag */
     USART_FLAG_BSY = USART_REGIDX_BIT(USART_STAT_REG_OFFSET, 16U),         /*!< busy flag */
-    USART_FLAG_ABD = USART_REGIDX_BIT(USART_STAT_REG_OFFSET, 15U),         /*!< auto baudrate detection flag */
-    USART_FLAG_ABDE = USART_REGIDX_BIT(USART_STAT_REG_OFFSET, 14U),        /*!< auto baudrate detection error */
     USART_FLAG_EB = USART_REGIDX_BIT(USART_STAT_REG_OFFSET, 12U),          /*!< end of block flag */
     USART_FLAG_RT = USART_REGIDX_BIT(USART_STAT_REG_OFFSET, 11U),          /*!< receiver timeout flag */
     USART_FLAG_CTS = USART_REGIDX_BIT(USART_STAT_REG_OFFSET, 10U),         /*!< CTS level */
@@ -378,11 +371,6 @@ typedef enum {
 #define USART_MSBF_LSB                CTL1_MSBF(0)                   /*!< LSB first */
 #define USART_MSBF_MSB                CTL1_MSBF(1)                   /*!< MSB first */
 
-/* USART auto baud rate detection mode bits definitions */
-#define CTL1_ABDM(regval)             (BITS(21,22) & ((uint32_t)(regval) << 21))
-#define USART_ABDM_FTOR               CTL1_ABDM(0)                   /*!< falling edge to rising edge measurement */
-#define USART_ABDM_FTOF               CTL1_ABDM(1)                   /*!< falling edge to falling edge measurement */
-
 /* USART IrDA low-power enable */
 #define CTL2_IRLP(regval)             (BIT(2) & ((uint32_t)(regval) << 2))
 #define USART_IRLP_LOW                CTL2_IRLP(1)                   /*!< low-power */
@@ -390,13 +378,13 @@ typedef enum {
 
 /* DMA enable for reception */
 #define CTL2_DENR(regval)             (BIT(6) & ((uint32_t)(regval) << 6))
-#define USART_DENR_ENABLE             CTL2_DENR(1)                   /*!< enable for reception */
-#define USART_DENR_DISABLE            CTL2_DENR(0)                   /*!< disable for reception */
+#define USART_RECEIVE_DMA_ENABLE      CTL2_DENR(1)                   /*!< enable for reception */
+#define USART_RECEIVE_DMA_DISABLE     CTL2_DENR(0)                   /*!< disable for reception */
 
 /* DMA enable for transmission */
 #define CTL2_DENT(regval)             (BIT(7) & ((uint32_t)(regval) << 7))
-#define USART_DENT_ENABLE             CTL2_DENT(1)                   /*!< enable for transmission */
-#define USART_DENT_DISABLE            CTL2_DENT(0)                   /*!< disable for transmission */
+#define USART_TRANSMIT_DMA_ENABLE     CTL2_DENT(1)                   /*!< enable for transmission */
+#define USART_TRANSMIT_DMA_DISABLE    CTL2_DENT(0)                   /*!< disable for transmission */
 
 /* USART RTS hardware flow control configure */
 #define CTL2_RTSEN(regval)            (BIT(8) & ((uint32_t)(regval) << 8))
@@ -470,19 +458,11 @@ void usart_receiver_timeout_disable(uint32_t usart_periph);
 /* configure receiver timeout threshold */
 void usart_receiver_timeout_threshold_config(uint32_t usart_periph, uint32_t rtimeout);
 /* USART transmit data function */
-void usart_data_transmit(uint32_t usart_periph, uint32_t data);
+void usart_data_transmit(uint32_t usart_periph, uint16_t data);
 /* USART receive data function */
 uint16_t usart_data_receive(uint32_t usart_periph);
 /* enable USART command */
 void usart_command_enable(uint32_t usart_periph, uint32_t cmdtype);
-
-/* auto baud rate detection */
-/* enable auto baud rate detection */
-void usart_autobaud_detection_enable(uint32_t usart_periph);
-/* disable auto baud rate detection */
-void usart_autobaud_detection_disable(uint32_t usart_periph);
-/* configure auto baud rate detection mode */
-void usart_autobaud_detection_mode_config(uint32_t usart_periph, uint32_t abdmod);
 
 /* multi-processor communication */
 /* configure address of the USART */

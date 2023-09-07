@@ -2,11 +2,11 @@
     \file    usb_hid.h
     \brief   definitions for the USB HID class
 
-    \version 2021-08-04, V1.0.0, firmware for GD32L23x
+    \version 2023-06-21, V1.1.0, firmware for GD32L23x
 */
 
 /*
-    Copyright (c) 2021, GigaDevice Semiconductor Inc.
+    Copyright (c) 2023, GigaDevice Semiconductor Inc.
 
     Redistribution and use in source and binary forms, with or without modification,
 are permitted provided that the following conditions are met:
@@ -58,7 +58,8 @@ OF SUCH DAMAGE.
 
 #pragma pack(1)
 
-typedef struct {
+typedef struct
+{
     usb_desc_header header;     /*!< regular descriptor header containing the descriptor's type and length */
 
     uint16_t bcdHID;            /*!< BCD encoded version that the HID descriptor and device complies to */
@@ -70,7 +71,8 @@ typedef struct {
 
 #pragma pack()
 
-typedef struct {
+typedef struct
+{
     usb_desc_config         config;
     usb_desc_itf            hid_itf;
     usb_desc_hid            hid_vendor;

@@ -2,11 +2,11 @@
     \file    gd32l23x_exti.c
     \brief   EXTI driver
 
-    \version 2021-08-04, V1.0.0, firmware for GD32L23x
+    \version 2023-06-21, V1.1.0, firmware for GD32L23x
 */
 
 /*
-    Copyright (c) 2021, GigaDevice Semiconductor Inc.
+    Copyright (c) 2023, GigaDevice Semiconductor Inc.
 
     Redistribution and use in source and binary forms, with or without modification,
 are permitted provided that the following conditions are met:
@@ -34,6 +34,8 @@ OF SUCH DAMAGE.
 
 #include "gd32l23x_exti.h"
 
+#define EXTI_REG_RESET_VALUE            ((uint32_t)0x00000000U)
+
 /*!
     \brief      deinitialize the EXTI
     \param[in]  none
@@ -43,11 +45,11 @@ OF SUCH DAMAGE.
 void exti_deinit(void)
 {
     /* reset the value of all the EXTI registers */
-    EXTI_INTEN = (uint32_t)0x0F940000U;
-    EXTI_EVEN  = (uint32_t)0x00000000U;
-    EXTI_RTEN  = (uint32_t)0x00000000U;
-    EXTI_FTEN  = (uint32_t)0x00000000U;
-    EXTI_SWIEV = (uint32_t)0x00000000U;
+    EXTI_INTEN = EXTI_REG_RESET_VALUE;
+    EXTI_EVEN  = EXTI_REG_RESET_VALUE;
+    EXTI_RTEN  = EXTI_REG_RESET_VALUE;
+    EXTI_FTEN  = EXTI_REG_RESET_VALUE;
+    EXTI_SWIEV = EXTI_REG_RESET_VALUE;
 }
 
 /*!
@@ -190,7 +192,7 @@ void exti_software_interrupt_disable(exti_line_enum linex)
 }
 
 /*!
-    \brief      get EXTI lines flag
+    \brief      get EXTI line x interrupt pending flag
     \param[in]  linex: EXTI line number, refer to exti_line_enum
                 only one parameter can be selected which is shown as below:
       \arg        EXTI_x (x=0..29): EXTI line x
@@ -207,7 +209,7 @@ FlagStatus exti_flag_get(exti_line_enum linex)
 }
 
 /*!
-    \brief      clear EXTI lines pending flag
+    \brief      clear EXTI line x interrupt pending flag
     \param[in]  linex: EXTI line number, refer to exti_line_enum
                 only one parameter can be selected which is shown as below:
       \arg        EXTI_x (x=0..29): EXTI line x
@@ -220,7 +222,7 @@ void exti_flag_clear(exti_line_enum linex)
 }
 
 /*!
-    \brief      get EXTI lines flag when the interrupt flag is set
+    \brief      get EXTI line x interrupt pending flag
     \param[in]  linex: EXTI line number, refer to exti_line_enum
                 only one parameter can be selected which is shown as below:
       \arg        EXTI_x (x=0..29): EXTI line x
@@ -229,12 +231,7 @@ void exti_flag_clear(exti_line_enum linex)
 */
 FlagStatus exti_interrupt_flag_get(exti_line_enum linex)
 {
-    uint32_t flag_left, flag_right;
-
-    flag_left = EXTI_PD & (uint32_t)linex;
-    flag_right = EXTI_INTEN & (uint32_t)linex;
-
-    if((RESET != flag_left) && (RESET != flag_right)) {
+    if(RESET != (EXTI_PD & (uint32_t)linex)) {
         return SET;
     } else {
         return RESET;
@@ -242,7 +239,7 @@ FlagStatus exti_interrupt_flag_get(exti_line_enum linex)
 }
 
 /*!
-    \brief      clear EXTI lines pending flag
+    \brief      clear EXTI line x interrupt pending flag
     \param[in]  linex: EXTI line number, refer to exti_line_enum
                 only one parameter can be selected which is shown as below:
       \arg        EXTI_x (x=0..29): EXTI line x

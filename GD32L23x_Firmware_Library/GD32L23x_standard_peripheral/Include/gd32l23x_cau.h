@@ -2,12 +2,11 @@
     \file    gd32l23x_cau.h
     \brief   definitions for the CAU
 
-    \version 2021-08-04, V1.0.0, firmware for GD32L23x
-    \version 2021-08-12, V1.0.1, firmware for GD32L23x
+    \version 2023-06-21, V1.1.0, firmware for GD32L23x
 */
 
 /*
-    Copyright (c) 2021, GigaDevice Semiconductor Inc.
+    Copyright (c) 2023, GigaDevice Semiconductor Inc.
 
     Redistribution and use in source and binary forms, with or without modification,
 are permitted provided that the following conditions are met:
@@ -159,7 +158,7 @@ typedef struct {
 
 /* structure for encrypt and decrypt parameters */
 typedef struct {
-    uint32_t alg_dir;      /*!< algorithm dirctory */
+    uint32_t alg_dir;      /*!< algorithm direction */
     uint8_t *key;          /*!< key */
     uint32_t key_size;     /*!< key size in bytes */
     uint8_t *iv;           /*!< initialization vector */

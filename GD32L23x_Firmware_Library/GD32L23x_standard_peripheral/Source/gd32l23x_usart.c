@@ -2,11 +2,11 @@
     \file    gd32l23x_usart.c
     \brief   USART driver
 
-    \version 2021-08-04, V1.0.0, firmware for GD32L23x
+    \version 2023-06-21, V1.1.0, firmware for GD32L23x
 */
 
 /*
-    Copyright (c) 2021, GigaDevice Semiconductor Inc.
+    Copyright (c) 2023, GigaDevice Semiconductor Inc.
 
     Redistribution and use in source and binary forms, with or without modification,
 are permitted provided that the following conditions are met:
@@ -406,9 +406,9 @@ void usart_receiver_timeout_threshold_config(uint32_t usart_periph, uint32_t rti
     \param[out] none
     \retval     none
 */
-void usart_data_transmit(uint32_t usart_periph, uint32_t data)
+void usart_data_transmit(uint32_t usart_periph, uint16_t data)
 {
-    USART_TDATA(usart_periph) = (USART_TDATA_TDATA & data);
+    USART_TDATA(usart_periph) = (USART_TDATA_TDATA & (uint32_t)data);
 }
 
 /*!
@@ -427,7 +427,6 @@ uint16_t usart_data_receive(uint32_t usart_periph)
     \param[in]  usart_periph: USARTx(x=0,1), UARTx(x=3,4)
     \param[in]  cmdtype: command type
                 only one parameter can be selected which is shown as below:
-      \arg        USART_CMD_ABDCMD: auto baudrate detection command
       \arg        USART_CMD_SBKCMD: send break command
       \arg        USART_CMD_MMCMD: mute mode command
       \arg        USART_CMD_RXFCMD: receive data flush command
@@ -438,45 +437,6 @@ uint16_t usart_data_receive(uint32_t usart_periph)
 void usart_command_enable(uint32_t usart_periph, uint32_t cmdtype)
 {
     USART_CMD(usart_periph) |= (cmdtype);
-}
-
-/*!
-    \brief      enable auto baud rate detection
-    \param[in]  usart_periph: USARTx(x=0,1)
-    \param[out] none
-    \retval     none
-*/
-void usart_autobaud_detection_enable(uint32_t usart_periph)
-{
-    USART_CTL1(usart_periph) |= USART_CTL1_ABDEN;
-}
-
-/*!
-    \brief      disable auto baud rate detection
-    \param[in]  usart_periph: USARTx(x=0,1)
-    \param[out] none
-    \retval     none
-*/
-void usart_autobaud_detection_disable(uint32_t usart_periph)
-{
-    USART_CTL1(usart_periph) &= ~(USART_CTL1_ABDEN);
-}
-
-/*!
-    \brief      configure auto baud rate detection mode
-    \param[in]  usart_periph: USARTx(x=0,1)
-    \param[in]  abdmod: auto baud rate detection mode
-                only one parameter can be selected which is shown as below:
-      \arg        USART_ABDM_FTOR: falling edge to rising edge measurement
-      \arg        USART_ABDM_FTOF: falling edge to falling edge measurement
-    \param[out] none
-    \retval     none
-*/
-void usart_autobaud_detection_mode_config(uint32_t usart_periph, uint32_t abdmod)
-{
-    /* reset ABDM bits */
-    USART_CTL1(usart_periph) &= ~(USART_CTL1_ABDM);
-    USART_CTL1(usart_periph) |= abdmod;
 }
 
 /*!
@@ -1008,8 +968,8 @@ void usart_depolarity_config(uint32_t usart_periph, uint32_t dep)
     \param[in]  usart_periph: USARTx(x=0,1), UARTx(x=3,4)
     \param[in]  dmacmd: enable or disable DMA for reception
                 only one parameter can be selected which is shown as below:
-      \arg        USART_DENR_ENABLE: DMA enable for reception
-      \arg        USART_DENR_DISABLE: DMA disable for reception
+      \arg        USART_RECEIVE_DMA_ENABLE: DMA enable for reception
+      \arg        USART_RECEIVE_DMA_DISABLE: DMA disable for reception
     \param[out] none
     \retval     none
 */
@@ -1025,8 +985,8 @@ void usart_dma_receive_config(uint32_t usart_periph, uint32_t dmacmd)
     \param[in]  usart_periph: USARTx(x=0,1), UARTx(x=3,4)
     \param[in]  dmacmd: enable or disable DMA for transmission
                 only one parameter can be selected which is shown as below:
-      \arg        USART_DENT_ENABLE: DMA enable for transmission
-      \arg        USART_DENT_DISABLE: DMA disable for transmission
+      \arg        USART_TRANSMIT_DMA_ENABLE: DMA enable for transmission
+      \arg        USART_TRANSMIT_DMA_DISABLE: DMA disable for transmission
     \param[out] none
     \retval     none
 */
@@ -1158,8 +1118,6 @@ uint8_t usart_receive_fifo_counter_number(uint32_t usart_periph)
       \arg        USART_FLAG_CTS: CTS level
       \arg        USART_FLAG_RT: receiver timeout flag
       \arg        USART_FLAG_EB: end of block flag
-      \arg        USART_FLAG_ABDE: auto baudrate detection error
-      \arg        USART_FLAG_ABD: auto baudrate detection flag
       \arg        USART_FLAG_BSY: busy flag
       \arg        USART_FLAG_AM: address match flag
       \arg        USART_FLAG_SB: send break flag

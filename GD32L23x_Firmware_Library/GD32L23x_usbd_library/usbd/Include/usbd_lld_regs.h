@@ -2,11 +2,11 @@
     \file    usbd_lld_regs.h
     \brief   USB device low level registers
 
-    \version 2021-08-04, V1.0.0, firmware for GD32L23x
+    \version 2023-06-21, V1.1.0, firmware for GD32L23x
 */
 
 /*
-    Copyright (c) 2021, GigaDevice Semiconductor Inc.
+    Copyright (c) 2023, GigaDevice Semiconductor Inc.
 
     Redistribution and use in source and binary forms, with or without modification,
 are permitted provided that the following conditions are met:
@@ -187,46 +187,46 @@ OF SUCH DAMAGE.
 /* TX or RX transfer status setting (bits EPTX_STA[1:0]) */
 
 #define USBD_EP_TX_STAT_SET(ep, stat) do {\
-        USBD_EPxCS(ep) = (USBD_EPxCS(ep) & (uint16_t)EPTX_DTGMASK) ^ (stat); \
-    } while(0)
+    USBD_EPxCS(ep) = (USBD_EPxCS(ep) & (uint16_t)EPTX_DTGMASK) ^ (stat); \
+} while(0)
 
 #define USBD_EP_RX_STAT_SET(ep, stat) do {\
-        USBD_EPxCS(ep) = (USBD_EPxCS(ep) & (uint16_t)EPRX_DTGMASK) ^ (stat); \
-    } while(0)
+    USBD_EPxCS(ep) = (USBD_EPxCS(ep) & (uint16_t)EPRX_DTGMASK) ^ (stat); \
+} while(0)
 
 /* clear bit EPxCS_RX_ST/EPxCS_TX_ST in the endpoint control and status register */
 
 #define USBD_EP_TX_ST_CLEAR(ep) do {\
-        USBD_EPxCS(ep) &= ~EPxCS_TX_ST & (uint16_t)EPCS_MASK; \
-    } while(0)
+    USBD_EPxCS(ep) &= ~EPxCS_TX_ST & (uint16_t)EPCS_MASK; \
+} while(0)
 
 #define USBD_EP_RX_ST_CLEAR(ep) do {\
-        USBD_EPxCS(ep) &= ~EPxCS_RX_ST & (uint16_t)EPCS_MASK; \
-    } while(0)
+    USBD_EPxCS(ep) &= ~EPxCS_RX_ST & (uint16_t)EPCS_MASK; \
+} while(0)
 
 /* toggle EPxCS_RX_DTG or EPxCS_TX_DTG bit in the endpoint control and status register */
 
 #define USBD_TX_DTG_TOGGLE(ep) do {\
-        USBD_EPxCS(ep) = EPxCS_TX_DTG | (USBD_EPxCS(ep) & EPCS_MASK); \
-    } while(0)
+    USBD_EPxCS(ep) = EPxCS_TX_DTG | (USBD_EPxCS(ep) & EPCS_MASK); \
+} while(0)
 
 #define USBD_RX_DTG_TOGGLE(ep) do {\
-        USBD_EPxCS(ep) = EPxCS_RX_DTG | (USBD_EPxCS(ep) & EPCS_MASK); \
-    } while(0)
+    USBD_EPxCS(ep) = EPxCS_RX_DTG | (USBD_EPxCS(ep) & EPCS_MASK); \
+} while(0)
 
 /* clear EPxCS_RX_DTG or EPxCS_TX_DTG bit in the endpoint control and status register */
 
 #define USBD_TX_DTG_CLEAR(ep) do {\
-        if ((USBD_EPxCS(ep_num) & EPxCS_TX_DTG) != 0U) {\
-            USBD_TX_DTG_TOGGLE(ep);\
-        } \
-    } while(0)
+    if ((USBD_EPxCS(ep_num) & EPxCS_TX_DTG) != 0U) {\
+        USBD_TX_DTG_TOGGLE(ep);\
+    } \
+} while(0)
 
 #define USBD_RX_DTG_CLEAR(ep) do {\
-        if ((USBD_EPxCS(ep_num) & EPxCS_RX_DTG) != 0U) {\
-            USBD_RX_DTG_TOGGLE(ep);\
-        } \
-    } while(0)
+    if ((USBD_EPxCS(ep_num) & EPxCS_RX_DTG) != 0U) {\
+        USBD_RX_DTG_TOGGLE(ep);\
+    } \
+} while(0)
 
 #define USBD_EP_DBL_BUF_SET(ep) (USBD_EPxCS(ep) = (USBD_EPxCS(ep) | EPxCS_KCTL) & EPCS_MASK)
 

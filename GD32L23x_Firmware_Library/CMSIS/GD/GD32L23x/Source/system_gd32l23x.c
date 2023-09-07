@@ -1,5 +1,5 @@
 /*!
-    \file  system_gd32l301.c
+    \file  system_gd32l23x.c
     \brief CMSIS Cortex-M23 Device Peripheral Access Layer Source File for
            GD32L23x Device Series
 */
@@ -47,6 +47,12 @@
 //#define __SYSTEM_CLOCK_16M_IRC16M            (__IRC16M)
 #define __SYSTEM_CLOCK_64M_PLL_HXTAL         (uint32_t)(64000000)
 //#define __SYSTEM_CLOCK_64M_PLL_IRC16M        (uint32_t)(64000000)
+
+#define HXTALSTB_DELAY          {                                 \
+                                   volatile uint32_t i;           \
+                                   for(i=0; i<0x2000; i++){       \
+                                   }                              \
+                                }
 
 #define SEL_IRC16M      0x00
 #define SEL_HXTAL       0x01
@@ -140,7 +146,7 @@ static void system_clock_8m_hxtal(void)
 
     /* enable HXTAL */
     RCU_CTL |= RCU_CTL_HXTALEN;
-
+    HXTALSTB_DELAY
     /* wait until HXTAL is stable or the startup time is longer than HXTAL_STARTUP_TIMEOUT */
     do {
         timeout++;
@@ -183,7 +189,7 @@ static void system_clock_64m_hxtal(void)
 
     /* enable HXTAL */
     RCU_CTL |= RCU_CTL_HXTALEN;
-
+    HXTALSTB_DELAY
     /* wait until HXTAL is stable or the startup time is longer than HXTAL_STARTUP_TIMEOUT */
     do {
         timeout++;
@@ -343,7 +349,7 @@ void SystemCoreClockUpdate(void)
         pllmf6 = GET_BITS(RCU_CFG0, 27, 27);
         pllmf = ((pllmf6 << 6) + pllmf);
         /* high 16 bits */
-        if(14U <= pllmf) {
+        if(14U < pllmf) {
             pllmf += 1U;
         } else if(15U == pllmf) {
             pllmf = 16U;

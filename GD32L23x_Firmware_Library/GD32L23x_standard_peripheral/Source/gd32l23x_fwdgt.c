@@ -2,11 +2,11 @@
     \file    gd32l23x_fwdgt.c
     \brief   FWDGT driver
 
-    \version 2021-08-04, V1.0.0, firmware for GD32L23x
+    \version 2023-06-21, V1.1.0, firmware for GD32L23x
 */
 
 /*
-    Copyright (c) 2021, GigaDevice Semiconductor Inc.
+    Copyright (c) 2023, GigaDevice Semiconductor Inc.
 
     Redistribution and use in source and binary forms, with or without modification,
 are permitted provided that the following conditions are met:
@@ -33,13 +33,6 @@ OF SUCH DAMAGE.
 */
 
 #include "gd32l23x_fwdgt.h"
-
-/* write value to FWDGT_CTL_CMD bit field */
-#define CTL_CMD(regval)             (BITS(0,15) & ((uint32_t)(regval) << 0U))  /*!< write value to FWDGT_CTL_CMD bit field */
-/* write value to FWDGT_RLD_RLD bit field */
-#define RLD_RLD(regval)             (BITS(0,11) & ((uint32_t)(regval) << 0U))  /*!< write value to FWDGT_RLD_RLD bit field */
-/* write value to FWDGT_WND_WND bit field */
-#define WND_WND(regval)             (BITS(0,11) & ((uint32_t)(regval) << 0U))  /*!< write value to FWDGT_WND_WND bit field */
 
 /*!
     \brief      enable write access to FWDGT_PSC, FWDGT_RLD and FWDGT_WND

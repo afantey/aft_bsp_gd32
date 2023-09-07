@@ -2,11 +2,11 @@
     \file    gd32l23x_cmp.h
     \brief   definitions for the CMP
 
-    \version 2021-08-04, V1.0.0, firmware for GD32L23x
+    \version 2023-06-21, V1.1.0, firmware for GD32L23x
 */
 
 /*
-    Copyright (c) 2021, GigaDevice Semiconductor Inc.
+    Copyright (c) 2023, GigaDevice Semiconductor Inc.
 
     Redistribution and use in source and binary forms, with or without modification,
 are permitted provided that the following conditions are met:
@@ -78,8 +78,8 @@ OF SUCH DAMAGE.
 /* operating mode */
 typedef enum {
     CMP_HIGHSPEED = 0,                                                           /*!< high speed mode */
-    CMP_MIDDLESPEED,                                                             /*!< medium speed mode */
-    CMP_LOWSPEED                                                                 /*!< low speed mode */
+    CMP_MIDDLESPEED = 1,                                                         /*!< middle speed mode */
+    CMP_LOWSPEED = 3                                                             /*!< low speed mode */
 } operating_mode_enum;
 
 /* inverting input */
@@ -114,17 +114,16 @@ typedef enum {
 typedef enum {
     CMP_OUTPUT_NONE = 0,                                                         /*!< output no selection */
     CMP_OUTPUT_TIMER1IC3,                                                        /*!< TIMER 1 channel3 input capture */
-    CMP_OUTPUT_TIMER2IC0,                                                         /*!< TIMER 2 channel0 input capture */
-    CMP_OUTPUT_LPTIMERIC0_IC1                                                    /*!< LPTIMER channel0 or channel1 input capture */
+    CMP_OUTPUT_TIMER2IC0,                                                        /*!< TIMER 2 channel0 input capture */
 } cmp_output_enum;
 
-/* output inv */
+/* output invert */
 typedef enum {
     CMP_OUTPUT_POLARITY_INVERTED = 0,                                            /*!< output is inverted */
     CMP_OUTPUT_POLARITY_NOINVERTED                                               /*!< output is not inverted */
 } cmp_output_inv_enum;
 
-/* blanking_sourc */
+/* blanking_source */
 typedef enum {
     CMP_BLANKING_NONE = 0,                                                       /*!< output no selection */
     CMP_BLANKING_TIMER1_OC1 = 1,                                                 /*!< TIMER 1 output channel 1 */
@@ -164,12 +163,11 @@ typedef enum {
 #define CS_CMP0OSEL_NOSELECTION                   CS_CMP0OSEL(0)                 /*!< CMP0 no output selection */
 #define CS_CMP0OSEL_TIMER1CI3                     CS_CMP0OSEL(1)                 /*!< CMP0 as TIMER1 channel 3 input capture source */
 #define CS_CMP0OSEL_TIMER2CI0                     CS_CMP0OSEL(2)                 /*!< CMP0 as TIMER2 channel 0 input capture source */
-#define CS_CMP0OSEL_LPTIMERCI0                    CS_CMP0OSEL(3)                 /*!< CMP0 as LPTIMER channel 0 input capture source */
 
 /* CMP0 output polarity*/
 #define CS_CMP0PL(regval)                         (BIT(15) & ((uint32_t)(regval) << 15))
-#define CS_CMP0PL_NOL                             CS_CMP0PL(0)                   /*!< CMP0 output not inverted */
-#define CS_CMP0PL_INV                             CS_CMP0PL(1)                   /*!< CMP0 output inverted */
+#define CS_CMP0PL_NOL                             CS_CMP0PL(0)                   /*!< CMP0 output is not inverted */
+#define CS_CMP0PL_INV                             CS_CMP0PL(1)                   /*!< CMP0 output is inverted */
 
 /* CMP0 hysteresis */
 #define CS_CMP0HST(regval)                        (BITS(16,17) & ((uint32_t)(regval) << 16))
@@ -178,7 +176,7 @@ typedef enum {
 #define CS_CMP0HST_HYSTERESIS_MEDIUM              CS_CMP0HST(2)                  /*!< CMP0 output medium hysteresis */
 #define CS_CMP0HST_HYSTERESIS_HIGH                CS_CMP0HST(3)                  /*!< CMP0 output high hysteresis */
 
-/* CMP0 Blanking suorce */
+/* CMP0 blanking source */
 #define CS_CMP0BLK(regval)                        (BITS(18,20) & ((uint32_t)(regval) << 18))
 #define CS_CMP0BLK_NOBLK                          CS_CMP0BLK(0)                  /*!< CMP0 no blanking */
 #define CS_CMP0BLK_TIMER1_OC1                     CS_CMP0BLK(1)                  /*!< CMP0 TIMER1 OC1 selected as blanking source */
@@ -188,33 +186,33 @@ typedef enum {
 
 /* CMP0 bridge enable*/
 #define CS_CMP0BEN(regval)                        (BIT(22) & ((uint32_t)(regval) << 22))
-#define CS_CMP0BEN_DISABLE                        CS_CMP0BEN(0)                  /*!< CMP0 scaler bridge enable */
-#define CS_CMP0BEN_ENABLE                         CS_CMP0BEN(1)                  /*!< CMP0 scaler bridge disable */
+#define CS_CMP0BEN_DISABLE                        CS_CMP0BEN(0)                  /*!< CMP0 scaler bridge disable */
+#define CS_CMP0BEN_ENABLE                         CS_CMP0BEN(1)                  /*!< CMP0 scaler bridge enable */
 
 /* CMP0 voltage scaler*/
 #define CS_CMP0SEN(regval)                        (BIT(23) & ((uint32_t)(regval) << 23))
-#define CS_CMP0SEN_DISABLE                        CS_CMP0SEN(0)                  /*!< CMP0 voltage scaler enable */
-#define CS_CMP0SEN_ENABLE                         CS_CMP0SEN(1)                  /*!< CMP0 voltage scaler disable */
+#define CS_CMP0SEN_DISABLE                        CS_CMP0SEN(0)                  /*!< CMP0 voltage scaler disable */
+#define CS_CMP0SEN_ENABLE                         CS_CMP0SEN(1)                  /*!< CMP0 voltage scaler enable */
 
 /* CMP0 output state bit*/
 #define CS_CMP0OUT(regval)                        (BIT(30) & ((uint32_t)(regval) << 30))
-#define CS_CMP0OUT_DISABLE                        CS_CMP0LK(0)                   /*!< Non-inverting input below inverting input and the output is low */
-#define CS_CMP0OUT_ENABLE                         CS_CMP0LK(1)                   /*!< Non-inverting input above inverting input and the output is high */
+#define CS_CMP0OUT_DISABLE                        CS_CMP0LK(0)                   /*!< non-inverting input below inverting input and the output is low */
+#define CS_CMP0OUT_ENABLE                         CS_CMP0LK(1)                   /*!< non-inverting input above inverting input and the output is high */
 
 /* CMP0 lock bit*/
 #define CS_CMP0LK(regval)                         (BIT(31) & ((uint32_t)(regval) << 31))
-#define CS_CMP0LK_DISABLE                         CS_CMP0LK(0)                   /*!< CMP0 voltage scaler enable */
-#define CS_CMP0LK_ENABLE                          CS_CMP0LK(1)                   /*!< CMP0 voltage scaler disable */
+#define CS_CMP0LK_DISABLE                         CS_CMP0LK(0)                   /*!< CMP0 voltage scaler disable */
+#define CS_CMP0LK_ENABLE                          CS_CMP0LK(1)                   /*!< CMP0 voltage scaler enable */
 
 /* CMP1 enable bit*/
 #define CS_CMP1EN(regval)                         (BIT(0) & ((uint32_t)(regval) << 0))
-#define CS_CMP1EN_DISABLE                         CS_CMP1EN(0)                   /*!< CMP1 enable */
-#define CS_CMP1EN_ENABLE                          CS_CMP1EN(1)                   /*!< CMP1 disable */
+#define CS_CMP1EN_DISABLE                         CS_CMP1EN(0)                   /*!< CMP1 disable */
+#define CS_CMP1EN_ENABLE                          CS_CMP1EN(1)                   /*!< CMP1 enable */
 
 /* CMP1 window mode*/
 #define CS_CMP1WEN(regval)                        (BIT(1) & ((uint32_t)(regval) << 1))
-#define CS_CMP1WEN_DISABLE                        CS_CMP1WEN(0)                  /*!< Input plus of CMP1 is not connected to CMP0 */
-#define CS_CMP1WEN_ENABLE                         CS_CMP1WEN(1)                  /*!< Input plus of CMP1 is connected with input plus of CMP0 */
+#define CS_CMP1WEN_DISABLE                        CS_CMP1WEN(0)                  /*!< input plus of CMP1 is not connected to CMP0 */
+#define CS_CMP1WEN_ENABLE                         CS_CMP1WEN(1)                  /*!< input plus of CMP1 is connected with input plus of CMP0 */
 
 /* CMP1 mode */
 #define CS_CMP1PM(regval)                         (BITS(2,3) & ((uint32_t)(regval) << 2))
@@ -245,12 +243,11 @@ typedef enum {
 #define CS_CMP1OSEL_NOSELECTION                   CS_CMP1OSEL(0)                 /*!< CMP1 no output selection */
 #define CS_CMP1OSEL_TIMER1CI3                     CS_CMP1OSEL(1)                 /*!< CMP1 as TIMER1 channel 3 input capture source */
 #define CS_CMP1OSEL_TIMER2CI0                     CS_CMP1OSEL(2)                 /*!< CMP1 as TIMER2 channel 0 input capture source */
-#define CS_CMP1OSEL_LPTIMERCI1                    CS_CMP1OSEL(3)                 /*!< CMP1 as LPTIMER channel 1 input capture source */
 
 /* CMP1 output polarity*/
 #define CS_CMP1PL(regval)                         (BIT(15) & ((uint32_t)(regval) << 15))
-#define CS_CMP1PL_NOL                             CS_CMP1PL(0)                   /*!< CMP1 output not inverted */
-#define CS_CMP1PL_INV                             CS_CMP1PL(1)                   /*!< CMP1 output inverted */
+#define CS_CMP1PL_NOL                             CS_CMP1PL(0)                   /*!< CMP1 output is not inverted */
+#define CS_CMP1PL_INV                             CS_CMP1PL(1)                   /*!< CMP1 output is inverted */
 
 /* CMP1 hysteresis */
 #define CS_CMP1HST(regval)                        (BITS(16,17) & ((uint32_t)(regval) << 16))
@@ -259,7 +256,7 @@ typedef enum {
 #define CS_CMP1HST_HYSTERESIS_MEDIUM              CS_CMP1HST(2)                  /*!< CMP1 output medium hysteresis */
 #define CS_CMP1HST_HYSTERESIS_HIGH                CS_CMP1HST(3)                  /*!< CMP1 output high hysteresis */
 
-/* CMP1 Blanking suorce */
+/* CMP1 blanking source */
 #define CS_CMP1BLK(regval)                        (BITS(18,20) & ((uint32_t)(regval) << 18))
 #define CS_CMP1BLK_NOBLK                          CS_CMP1BLK(0)                  /*!< CMP1 no blanking */
 #define CS_CMP1BLK_TIMER1_OC1                     CS_CMP1BLK(1)                  /*!< CMP1 TIMER1 OC1 selected as blanking source */
@@ -269,23 +266,23 @@ typedef enum {
 
 /* CMP1 bridge enable*/
 #define CS_CMP1BEN(regval)                        (BIT(22) & ((uint32_t)(regval) << 22))
-#define CS_CMP1BEN_DISABLE                        CS_CMP1BEN(0)                  /*!< CMP1 scaler bridge enable */
-#define CS_CMP1BEN_ENABLE                         CS_CMP1BEN(1)                  /*!< CMP1 scaler bridge disable */
+#define CS_CMP1BEN_DISABLE                        CS_CMP1BEN(0)                  /*!< CMP1 scaler bridge disable */
+#define CS_CMP1BEN_ENABLE                         CS_CMP1BEN(1)                  /*!< CMP1 scaler bridge enable */
 
 /* CMP1 voltage scaler*/
 #define CS_CMP1SEN(regval)                        (BIT(23) & ((uint32_t)(regval) << 23))
-#define CS_CMP1SEN_DISABLE                        CS_CMP1SEN(0)                  /*!< CMP1 voltage scaler enable */
-#define CS_CMP1SEN_ENABLE                         CS_CMP1SEN(1)                  /*!< CMP1 voltage scaler disable */
+#define CS_CMP1SEN_DISABLE                        CS_CMP1SEN(0)                  /*!< CMP1 voltage scaler disable */
+#define CS_CMP1SEN_ENABLE                         CS_CMP1SEN(1)                  /*!< CMP1 voltage scaler enable */
 
 /* CMP1 output state bit*/
 #define CS_CMP1OUT(regval)                        (BIT(30) & ((uint32_t)(regval) << 30))
-#define CS_CMP1OUT_DISABLE                        CS_CMP1LK(0)                   /*!< Non-inverting input below inverting input and the output is low */
-#define CS_CMP1OUT_ENABLE                         CS_CMP1LK(1)                   /*!< Non-inverting input above inverting input and the output is high */
+#define CS_CMP1OUT_DISABLE                        CS_CMP1LK(0)                   /*!< non-inverting input below inverting input and the output is low */
+#define CS_CMP1OUT_ENABLE                         CS_CMP1LK(1)                   /*!< non-inverting input above inverting input and the output is high */
 
 /* CMP1 lock bit*/
 #define CS_CMP1LK(regval)                         (BIT(31) & ((uint32_t)(regval) << 31))
-#define CS_CMP1LK_DISABLE                         CS_CMP1LK(0)                   /*!< CMP1 voltage scaler enable */
-#define CS_CMP1LK_ENABLE                          CS_CMP1LK(1)                   /*!< CMP1 voltage scaler disable */
+#define CS_CMP1LK_DISABLE                         CS_CMP1LK(0)                   /*!< CMP1 voltage scaler disable */
+#define CS_CMP1LK_ENABLE                          CS_CMP1LK(1)                   /*!< CMP1 voltage scaler enable */
 
 /* function declarations */
 /* initialization functions */
@@ -293,13 +290,12 @@ typedef enum {
 void cmp_deinit(uint32_t cmp_periph);
 /* initialize comparator mode */
 void cmp_mode_init(uint32_t cmp_periph, operating_mode_enum operating_mode, inverting_input_enum inverting_input, cmp_hysteresis_enum output_hysteresis);
-/* selecte the plus input for CMP1 */
+/* select the plus input for CMP1 */
 void cmp1_plus_selection(CMP1_plus_input_enum plus_input);
 /* initialize comparator output */
 void cmp_output_init(uint32_t cmp_periph, cmp_output_enum output_selection, cmp_output_inv_enum output_polarity);
 /* initialize comparator blanking function */
 void cmp_blanking_init(uint32_t cmp_periph, blanking_source_enum blanking_source_selection);
-
 
 /* enable functions */
 /* enable comparator */

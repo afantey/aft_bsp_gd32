@@ -2,11 +2,11 @@
     \file    printer_core.h
     \brief   the header file of USB printer device class core functions
 
-    \version 2021-08-04, V1.0.0, firmware for GD32L23x
+    \version 2023-06-21, V1.1.0, firmware for GD32L23x
 */
 
 /*
-    Copyright (c) 2021, GigaDevice Semiconductor Inc.
+    Copyright (c) 2023, GigaDevice Semiconductor Inc.
 
     Redistribution and use in source and binary forms, with or without modification,
 are permitted provided that the following conditions are met:
@@ -37,13 +37,13 @@ OF SUCH DAMAGE.
 
 #include "usbd_enum.h"
 
-/* USB printing device class code */
+/* USB printer device class code */
 #define USB_CLASS_PRINTER               0x07U
 
-/* printing device subclass code */
+/* printer device subclass code */
 #define USB_SUBCLASS_PRINTER            0x01U
 
-/* printing device protocol code */
+/* printer device protocol code */
 #define PROTOCOL_UNIDIRECTIONAL_ITF     0x01U
 #define PROTOCOL_BI_DIRECTIONAL_ITF     0x02U
 #define PROTOCOL_1284_4_ITF             0x03U
@@ -53,13 +53,14 @@ OF SUCH DAMAGE.
 
 #define USB_PRINTER_CONFIG_DESC_LEN     32U
 
-/* printing device specific-class request */
+/* printer device specific-class request */
 #define GET_DEVICE_ID                   0x00U
 #define GET_PORT_STATUS                 0x01U
 #define SOFT_RESET                      0x02U
 
 /* USB configuration descriptor structure */
-typedef struct {
+typedef struct
+{
     usb_desc_config         config;
     usb_desc_itf            printer_itf;
     usb_desc_ep             printer_epin;

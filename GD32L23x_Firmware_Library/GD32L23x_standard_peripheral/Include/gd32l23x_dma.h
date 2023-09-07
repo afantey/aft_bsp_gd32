@@ -2,11 +2,11 @@
     \file    gd32l23x_dma.h
     \brief   definitions for the DMA
 
-    \version 2021-08-04, V1.0.0, firmware for GD32L23x
+    \version 2023-06-21, V1.1.0, firmware for GD32L23x
 */
 
 /*
-    Copyright (c) 2021, GigaDevice Semiconductor Inc.
+    Copyright (c) 2023, GigaDevice Semiconductor Inc.
 
     Redistribution and use in source and binary forms, with or without modification,
 are permitted provided that the following conditions are met:
@@ -584,9 +584,9 @@ void dmamux_gen_struct_para_init(dmamux_gen_parameter_struct *init_struct);
 /* initialize DMAMUX request generator channel */
 void dmamux_request_generator_init(dmamux_generator_channel_enum channelx, dmamux_gen_parameter_struct *init_struct);
 /* enable DMAMUX request generator channel */
-void dmamux_request_generator_chennel_enable(dmamux_generator_channel_enum channelx);
+void dmamux_request_generator_channel_enable(dmamux_generator_channel_enum channelx);
 /* disable DMAMUX request generator channel */
-void dmamux_request_generator_chennel_disable(dmamux_generator_channel_enum channelx);
+void dmamux_request_generator_channel_disable(dmamux_generator_channel_enum channelx);
 
 /* DMAMUX configuration functions */
 /* configure synchronization input polarity */

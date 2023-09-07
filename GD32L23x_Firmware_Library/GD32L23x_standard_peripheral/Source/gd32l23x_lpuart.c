@@ -2,11 +2,11 @@
     \file    gd32l23x_lpuart.c
     \brief   LPUART driver
 
-    \version 2021-08-04, V1.0.0, firmware for GD32L23x
+    \version 2023-06-21, V1.1.0, firmware for GD32L23x
 */
 
 /*
-    Copyright (c) 2021, GigaDevice Semiconductor Inc.
+    Copyright (c) 2023, GigaDevice Semiconductor Inc.
 
     Redistribution and use in source and binary forms, with or without modification,
 are permitted provided that the following conditions are met:
@@ -758,7 +758,7 @@ FlagStatus lpuart_interrupt_flag_get(lpuart_interrupt_flag_enum int_flag)
     /* get the corresponding flag bit status */
     flagstatus = (LPUART_REG_VAL2(LPUART, int_flag) & BIT(LPUART_BIT_POS2(int_flag)));
 
-    if(flagstatus && intenable) {
+    if((0U != flagstatus) && (0U != intenable)) {
         return SET;
     } else {
         return RESET;

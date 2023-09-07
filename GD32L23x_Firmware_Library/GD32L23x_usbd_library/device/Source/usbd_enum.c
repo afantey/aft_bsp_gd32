@@ -2,11 +2,11 @@
     \file    usbd_enum.c
     \brief   USB enumeration function
 
-    \version 2021-08-04, V1.0.0, firmware for GD32L23x
+    \version 2023-06-21, V1.1.0, firmware for GD32L23x
 */
 
 /*
-    Copyright (c) 2021, GigaDevice Semiconductor Inc.
+    Copyright (c) 2023, GigaDevice Semiconductor Inc.
 
     Redistribution and use in source and binary forms, with or without modification,
 are permitted provided that the following conditions are met:
@@ -36,28 +36,28 @@ OF SUCH DAMAGE.
 #include "usbd_transc.h"
 
 /* USB enumeration handle functions */
-static usb_reqsta _usb_std_getstatus(usb_dev *udev, usb_req *req);
-static usb_reqsta _usb_std_clearfeature(usb_dev *udev, usb_req *req);
-static usb_reqsta _usb_std_setfeature(usb_dev *udev, usb_req *req);
-static usb_reqsta _usb_std_setaddress(usb_dev *udev, usb_req *req);
-static usb_reqsta _usb_std_getdescriptor(usb_dev *udev, usb_req *req);
-static usb_reqsta _usb_std_setdescriptor(usb_dev *udev, usb_req *req);
-static usb_reqsta _usb_std_getconfiguration(usb_dev *udev, usb_req *req);
-static usb_reqsta _usb_std_setconfiguration(usb_dev *udev, usb_req *req);
-static usb_reqsta _usb_std_reserved(usb_dev *udev, usb_req *req);
-static usb_reqsta _usb_std_getinterface(usb_dev *udev, usb_req *req);
-static usb_reqsta _usb_std_setinterface(usb_dev *udev, usb_req *req);
-static usb_reqsta _usb_std_synchframe(usb_dev *udev, usb_req *req);
+static usb_reqsta _usb_std_getstatus        (usb_dev *udev, usb_req *req);
+static usb_reqsta _usb_std_clearfeature     (usb_dev *udev, usb_req *req);
+static usb_reqsta _usb_std_setfeature       (usb_dev *udev, usb_req *req);
+static usb_reqsta _usb_std_setaddress       (usb_dev *udev, usb_req *req);
+static usb_reqsta _usb_std_getdescriptor    (usb_dev *udev, usb_req *req);
+static usb_reqsta _usb_std_setdescriptor    (usb_dev *udev, usb_req *req);
+static usb_reqsta _usb_std_getconfiguration (usb_dev *udev, usb_req *req);
+static usb_reqsta _usb_std_setconfiguration (usb_dev *udev, usb_req *req);
+static usb_reqsta _usb_std_reserved         (usb_dev *udev, usb_req *req);
+static usb_reqsta _usb_std_getinterface     (usb_dev *udev, usb_req *req);
+static usb_reqsta _usb_std_setinterface     (usb_dev *udev, usb_req *req);
+static usb_reqsta _usb_std_synchframe       (usb_dev *udev, usb_req *req);
 
-static uint8_t *_usb_dev_desc_get(usb_dev *udev, uint8_t index, uint16_t *len);
-static uint8_t *_usb_config_desc_get(usb_dev *udev, uint8_t index, uint16_t *len);
-static uint8_t *_usb_str_desc_get(usb_dev *udev, uint8_t index, uint16_t *len);
-static uint8_t *_usb_bos_desc_get(usb_dev *udev, uint8_t index, uint16_t *len);
+static uint8_t* _usb_dev_desc_get      (usb_dev *udev, uint8_t index, uint16_t *len);
+static uint8_t* _usb_config_desc_get   (usb_dev *udev, uint8_t index, uint16_t *len);
+static uint8_t* _usb_str_desc_get      (usb_dev *udev, uint8_t index, uint16_t *len);
+static uint8_t* _usb_bos_desc_get      (usb_dev *udev, uint8_t index, uint16_t *len);
 
-static void int_to_unicode(uint32_t value, uint8_t *pbuf, uint8_t len);
+static void int_to_unicode (uint32_t value, uint8_t *pbuf, uint8_t len);
 
 /* standard device request handler */
-static usb_reqsta(*_std_dev_req[])(usb_dev *udev, usb_req *req) = {
+static usb_reqsta (*_std_dev_req[]) (usb_dev *udev, usb_req *req) = {
     [USB_GET_STATUS]        = _usb_std_getstatus,
     [USB_CLEAR_FEATURE]     = _usb_std_clearfeature,
     [USB_RESERVED2]         = _usb_std_reserved,
@@ -102,8 +102,8 @@ usb_reqsta usbd_standard_request(usb_dev *udev, usb_req *req)
 */
 usb_reqsta usbd_class_request(usb_dev *udev, usb_req *req)
 {
-    if((uint8_t)USBD_CONFIGURED == udev->cur_status) {
-        if(BYTE_LOW(req->wIndex) < USBD_ITF_MAX_NUM) {
+    if ((uint8_t)USBD_CONFIGURED == udev->cur_status) {
+        if (BYTE_LOW(req->wIndex) < USBD_ITF_MAX_NUM) {
             /* call device class handle function */
             return (usb_reqsta)udev->class_core->req_process(udev, req);
         }
@@ -121,9 +121,10 @@ usb_reqsta usbd_class_request(usb_dev *udev, usb_req *req)
 */
 usb_reqsta usbd_vendor_request(usb_dev *udev, usb_req *req)
 {
-    if(((uint8_t)USBD_CONFIGURED == udev->cur_status) && (udev->class_core->oem_req_process != NULL)) {
-        return (usb_reqsta)udev->class_core->oem_req_process(udev, req);
-    }
+    (void)udev;
+    (void)req;
+
+    /* added by user */
 
     return REQ_NOTSUPP;
 }
@@ -171,7 +172,7 @@ static uint8_t *_usb_config_desc_get(usb_dev *udev, uint8_t index, uint16_t *len
 {
     (void)index;
 
-    *len = udev->desc->config_desc[2] | (udev->desc->config_desc[3]<< 8);
+    *len = udev->desc->config_desc[2] | (udev->desc->config_desc[3]<< 8U);
 
     return udev->desc->config_desc;
 }
@@ -207,7 +208,7 @@ static uint8_t *_usb_bos_desc_get(usb_dev *udev, uint8_t index, uint16_t *len)
 */
 static uint8_t *_usb_str_desc_get(usb_dev *udev, uint8_t index, uint16_t *len)
 {
-    uint8_t *desc = udev->desc->strings[index];
+    uint8_t* desc = udev->desc->strings[index];
 
     *len = desc[0];
 
@@ -227,21 +228,21 @@ static usb_reqsta _usb_std_getstatus(usb_dev *udev, usb_req *req)
 
     usb_reqsta req_status = REQ_NOTSUPP;
 
-    __ALIGNED(2) static uint8_t status[2] = {0U};
+    static uint8_t status[2] = {0U};
 
     switch(req->bmRequestType & USB_RECPTYPE_MASK) {
     /* handle device get status request */
     case USB_RECPTYPE_DEV:
-        switch(udev->cur_status) {
+        switch (udev->cur_status) {
         case USBD_ADDRESSED:
         case USBD_CONFIGURED:
-            if(udev->pm.power_mode) {
+            if (udev->pm.power_mode) {
                 status[0] = USB_STATUS_SELF_POWERED;
             } else {
                 status[0] = 0U;
             }
 
-            if(udev->pm.remote_wakeup) {
+            if (udev->pm.remote_wakeup) {
                 status[0] |= USB_STATUS_REMOTE_WAKEUP;
             } else {
                 status[0] = 0U;
@@ -257,15 +258,15 @@ static usb_reqsta _usb_std_getstatus(usb_dev *udev, usb_req *req)
 
     /* handle interface get status request */
     case USB_RECPTYPE_ITF:
-        if(((uint8_t)USBD_CONFIGURED == udev->cur_status) && (recp < USBD_ITF_MAX_NUM)) {
+        if (((uint8_t)USBD_CONFIGURED == udev->cur_status) && (recp < USBD_ITF_MAX_NUM)) {
             req_status = REQ_SUPP;
         }
         break;
 
     /* handle endpoint get status request */
     case USB_RECPTYPE_EP:
-        if((uint8_t)USBD_CONFIGURED == udev->cur_status) {
-            if(0x80U == (recp & 0x80U)) {
+        if ((uint8_t)USBD_CONFIGURED == udev->cur_status) {
+            if (0x80U == (recp & 0x80U)) {
                 status[0] = udev->transc_in[EP_ID(recp)].ep_stall;
             } else {
                 status[0] = udev->transc_out[recp].ep_stall;
@@ -278,7 +279,7 @@ static usb_reqsta _usb_std_getstatus(usb_dev *udev, usb_req *req)
         break;
     }
 
-    if(REQ_SUPP == req_status) {
+    if (REQ_SUPP == req_status) {
         usb_transc_config(&udev->transc_in[0], status, 2U, 2U);
     }
 
@@ -296,13 +297,13 @@ static usb_reqsta _usb_std_clearfeature(usb_dev *udev, usb_req *req)
 {
     uint8_t ep = 0U;
 
-    switch(req->bmRequestType & (uint8_t)USB_RECPTYPE_MASK) {
+    switch (req->bmRequestType & (uint8_t)USB_RECPTYPE_MASK) {
     case USB_RECPTYPE_DEV:
-        switch(udev->cur_status) {
+        switch (udev->cur_status) {
         case USBD_ADDRESSED:
         case USBD_CONFIGURED:
             /* clear device remote wakeup feature */
-            if((uint16_t)USB_FEATURE_REMOTE_WAKEUP == req->wValue) {
+            if ((uint16_t)USB_FEATURE_REMOTE_WAKEUP == req->wValue) {
                 udev->pm.remote_wakeup = 0U;
 
                 return REQ_SUPP;
@@ -318,14 +319,15 @@ static usb_reqsta _usb_std_clearfeature(usb_dev *udev, usb_req *req)
         /* get endpoint address */
         ep = BYTE_LOW(req->wIndex);
 
-        if((uint8_t)USBD_CONFIGURED == udev->cur_status) {
+        if (((uint8_t)USBD_CONFIGURED == udev->cur_status) && (EP_ID(ep) < EP_COUNT)) {
             /* clear endpoint halt feature */
-            if(((uint16_t)USB_FEATURE_EP_HALT == req->wValue) && (!CTL_EP(ep))) {
-                usbd_ep_clear_stall(udev, ep);
+            if (((uint16_t)USB_FEATURE_EP_HALT == req->wValue) && (!CTL_EP(ep))) {
+                if(0U != usbd_ep_status_get(udev, ep)){
+                    usbd_ep_clear_stall(udev, ep);
+                    udev->class_core->req_process(udev, req);
 
-                udev->class_core->req_process(udev, req);
-
-                return REQ_SUPP;
+                    return REQ_SUPP;
+                }
             }
         }
         break;
@@ -351,13 +353,13 @@ static usb_reqsta _usb_std_setfeature(usb_dev *udev, usb_req *req)
 {
     uint8_t ep = 0U;
 
-    switch(req->bmRequestType & (uint8_t)USB_RECPTYPE_MASK) {
+    switch (req->bmRequestType & (uint8_t)USB_RECPTYPE_MASK) {
     case USB_RECPTYPE_DEV:
-        switch(udev->cur_status) {
+        switch (udev->cur_status) {
         case USBD_ADDRESSED:
         case USBD_CONFIGURED:
             /* set device remote wakeup feature */
-            if((uint16_t)USB_FEATURE_REMOTE_WAKEUP == req->wValue) {
+            if ((uint16_t)USB_FEATURE_REMOTE_WAKEUP == req->wValue) {
                 udev->pm.remote_wakeup = 1U;
 
                 return REQ_SUPP;
@@ -373,12 +375,16 @@ static usb_reqsta _usb_std_setfeature(usb_dev *udev, usb_req *req)
         /* get endpoint address */
         ep = BYTE_LOW(req->wIndex);
 
-        if((uint8_t)USBD_CONFIGURED == udev->cur_status) {
+        if (((uint8_t)USBD_CONFIGURED == udev->cur_status) && (EP_ID(ep) < EP_COUNT)) {
             /* set endpoint halt feature */
-            if(((uint8_t)USB_FEATURE_EP_HALT == req->wValue) && (!CTL_EP(ep))) {
-                usbd_ep_stall(udev, ep);
+            if (((uint16_t)USB_FEATURE_EP_HALT == req->wValue) && (!CTL_EP(ep))) {
+                /* check whether the endpoint status is disabled */
+                if(0U != usbd_ep_status_get(udev, ep)){
+                    usbd_ep_stall(udev, ep);
+                    udev->class_core->req_process(udev, req);
 
-                return REQ_SUPP;
+                    return REQ_SUPP;
+                }
             }
         }
         break;
@@ -402,11 +408,11 @@ static usb_reqsta _usb_std_setfeature(usb_dev *udev, usb_req *req)
 */
 static usb_reqsta _usb_std_setaddress(usb_dev *udev, usb_req *req)
 {
-    if((0U == req->wIndex) && (0U == req->wLength)) {
+    if ((0U == req->wIndex) && (0U == req->wLength)) {
         udev->dev_addr = (uint8_t)(req->wValue) & 0x7FU;
 
-        if(udev->cur_status != (uint8_t)USBD_CONFIGURED) {
-            if(udev->dev_addr) {
+        if (udev->cur_status != (uint8_t)USBD_CONFIGURED) {
+            if (udev->dev_addr) {
                 udev->cur_status = (uint8_t)USBD_ADDRESSED;
             } else {
                 udev->cur_status = (uint8_t)USBD_DEFAULT;
@@ -435,15 +441,15 @@ static usb_reqsta _usb_std_getdescriptor(usb_dev *udev, usb_req *req)
 
     usb_transc *transc = &udev->transc_in[0];
 
-    switch(req->bmRequestType & USB_RECPTYPE_MASK) {
+    switch (req->bmRequestType & USB_RECPTYPE_MASK) {
     case USB_RECPTYPE_DEV:
         desc_type = BYTE_HIGH(req->wValue);
         desc_index = BYTE_LOW(req->wValue);
 
-        switch(desc_type) {
+        switch (desc_type) {
         case USB_DESCTYPE_DEV:
             transc->xfer_buf = std_desc_get[desc_type - 1U](udev, desc_index, &transc->xfer_len);
-            if(64U == req->wLength) {
+            if (64U == req->wLength) {
                 transc->xfer_len = 8U;
             }
             break;
@@ -453,7 +459,7 @@ static usb_reqsta _usb_std_getdescriptor(usb_dev *udev, usb_req *req)
             break;
 
         case USB_DESCTYPE_STR:
-            if(desc_index < STR_IDX_MAX) {
+            if (desc_index < STR_IDX_MAX) {
                 transc->xfer_buf = std_desc_get[desc_type - 1U](udev, desc_index, &transc->xfer_len);
             }
             break;
@@ -486,12 +492,12 @@ static usb_reqsta _usb_std_getdescriptor(usb_dev *udev, usb_req *req)
         break;
     }
 
-    if((transc->xfer_len) && (req->wLength)) {
+    if ((transc->xfer_len) && (req->wLength)) {
         transc->xfer_len = USB_MIN(transc->xfer_len, req->wLength);
 
-        if((transc->xfer_len < udev->control.req.wLength) &&
-                (0U == transc->xfer_len % transc->max_len)) {
-            udev->control.ctl_zlp = 1U;
+        if ((transc->xfer_len < udev->control.req.wLength) &&
+            (0U == transc->xfer_len % transc->max_len)) {
+                udev->control.ctl_zlp = 1U;
         }
 
         status = REQ_SUPP;
@@ -529,15 +535,15 @@ static usb_reqsta _usb_std_getconfiguration(usb_dev *udev, usb_req *req)
 
     usb_reqsta req_status = REQ_NOTSUPP;
 
-    switch(udev->cur_status) {
+    switch (udev->cur_status) {
     case USBD_ADDRESSED:
-        if(0U == udev->config) {
+        if (0U == udev->config) {
             req_status = REQ_SUPP;
         }
         break;
 
     case USBD_CONFIGURED:
-        if(udev->config) {
+        if (udev->config) {
             req_status = REQ_SUPP;
         }
         break;
@@ -546,7 +552,7 @@ static usb_reqsta _usb_std_getconfiguration(usb_dev *udev, usb_req *req)
         break;
     }
 
-    if(REQ_SUPP == req_status) {
+    if (REQ_SUPP == req_status) {
         usb_transc_config(&udev->transc_in[0], &(udev->config), 1U, 1U);
     }
 
@@ -567,25 +573,25 @@ static usb_reqsta _usb_std_setconfiguration(usb_dev *udev, usb_req *req)
 
     config = (uint8_t)(req->wValue);
 
-    if(config <= USBD_CFG_MAX_NUM) {
-        switch(udev->cur_status) {
+    if (config <= USBD_CFG_MAX_NUM) {
+        switch (udev->cur_status) {
         case USBD_ADDRESSED:
-            if(config) {
+            if (config){
                 (void)udev->class_core->init(udev, config);
 
                 udev->config = config;
                 udev->cur_status = (uint8_t)USBD_CONFIGURED;
             }
             status = REQ_SUPP;
-            break;
+            break; 
 
         case USBD_CONFIGURED:
-            if(0U == config) {
+            if (0U == config) {
                 (void)udev->class_core->deinit(udev, config);
 
                 udev->config = config;
                 udev->cur_status = (uint8_t)USBD_ADDRESSED;
-            } else if(config != udev->config) {
+            } else if (config != udev->config) {
                 /* clear old configuration */
                 (void)udev->class_core->deinit(udev, udev->config);
 
@@ -619,7 +625,7 @@ static usb_reqsta _usb_std_setconfiguration(usb_dev *udev, usb_req *req)
 */
 static usb_reqsta _usb_std_getinterface(usb_dev *udev, usb_req *req)
 {
-    switch(udev->cur_status) {
+    switch (udev->cur_status) {
     case USBD_DEFAULT:
         break;
 
@@ -627,7 +633,7 @@ static usb_reqsta _usb_std_getinterface(usb_dev *udev, usb_req *req)
         break;
 
     case USBD_CONFIGURED:
-        if(BYTE_LOW(req->wIndex) < USBD_ITF_MAX_NUM) {
+        if (BYTE_LOW(req->wIndex) < USBD_ITF_MAX_NUM) {
             usb_transc_config(&udev->transc_in[0], &(udev->class_core->req_altset), 1U, 1U);
 
             return REQ_SUPP;
@@ -650,7 +656,7 @@ static usb_reqsta _usb_std_getinterface(usb_dev *udev, usb_req *req)
 */
 static usb_reqsta _usb_std_setinterface(usb_dev *udev, usb_req *req)
 {
-    switch(udev->cur_status) {
+    switch (udev->cur_status) {
     case USBD_DEFAULT:
         break;
 
@@ -658,8 +664,10 @@ static usb_reqsta _usb_std_setinterface(usb_dev *udev, usb_req *req)
         break;
 
     case USBD_CONFIGURED:
-        if(BYTE_LOW(req->wIndex) < USBD_ITF_MAX_NUM) {
+        if (BYTE_LOW(req->wIndex) < USBD_ITF_MAX_NUM) {
             udev->class_core->req_altset = (uint8_t)req->wValue;
+
+            udev->class_core->req_process(udev, req);
 
             return REQ_SUPP;
         }
@@ -700,8 +708,8 @@ static void int_to_unicode(uint32_t value, uint8_t *pbuf, uint8_t len)
 {
     uint8_t index = 0U;
 
-    for(index = 0U; index < len; index++) {
-        if((value >> 28U) < 0x0AU) {
+    for (index = 0U; index < len; index++) {
+        if ((value >> 28U) < 0x0AU) {
             pbuf[2U * index] = (uint8_t)((value >> 28) + '0');
         } else {
             pbuf[2U * index] = (uint8_t)((value >> 28) + 'A' - 10U);
@@ -721,23 +729,23 @@ static void int_to_unicode(uint32_t value, uint8_t *pbuf, uint8_t len)
 */
 void serial_string_get(uint16_t *unicode_str)
 {
-    if(6U != (unicode_str[0] & 0x00FFU)) {
+    if (6U != (unicode_str[0] & 0x00FFU)) {
         uint32_t DeviceSerial0, DeviceSerial1, DeviceSerial2;
 
-        DeviceSerial0 = *(uint32_t *)DEVICE_ID1;
-        DeviceSerial1 = *(uint32_t *)DEVICE_ID2;
-        DeviceSerial2 = *(uint32_t *)DEVICE_ID3;
+        DeviceSerial0 = *(uint32_t*)DEVICE_ID1;
+        DeviceSerial1 = *(uint32_t*)DEVICE_ID2;
+        DeviceSerial2 = *(uint32_t*)DEVICE_ID3;
 
         DeviceSerial0 += DeviceSerial2;
 
-        if(0U != DeviceSerial0) {
-            int_to_unicode(DeviceSerial0, (uint8_t *) & (unicode_str[1]), 8U);
-            int_to_unicode(DeviceSerial1, (uint8_t *) & (unicode_str[9]), 4U);
+        if (0U != DeviceSerial0) {
+            int_to_unicode(DeviceSerial0, (uint8_t*)&(unicode_str[1]), 8U);
+            int_to_unicode(DeviceSerial1, (uint8_t*)&(unicode_str[9]), 4U);
         }
     } else {
-        uint32_t device_serial = *(uint32_t *)DEVICE_ID;
+        uint32_t device_serial = *(uint32_t*)DEVICE_ID;
 
-        if(0U != device_serial) {
+        if (0U != device_serial) {
             unicode_str[1] = (uint16_t)(device_serial & 0x0000FFFFU);
             unicode_str[2] = (uint16_t)((device_serial & 0xFFFF0000U) >> 16U);
 

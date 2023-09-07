@@ -2,11 +2,11 @@
     \file    gd32l23x_wwdgt.c
     \brief   WWDGT driver
 
-    \version 2021-08-04, V1.0.0, firmware for GD32L23x
+    \version 2023-06-21, V1.1.0, firmware for GD32L23x
 */
 
 /*
-    Copyright (c) 2021, GigaDevice Semiconductor Inc.
+    Copyright (c) 2023, GigaDevice Semiconductor Inc.
 
     Redistribution and use in source and binary forms, with or without modification,
 are permitted provided that the following conditions are met:
@@ -33,11 +33,6 @@ OF SUCH DAMAGE.
 */
 
 #include "gd32l23x_wwdgt.h"
-
-/* WWDGT_CTL register value */
-#define CTL_CNT(regval)             (BITS(0,6) & ((uint32_t)(regval) << 0U))    /*!< write value to WWDGT_CTL_CNT bit field */
-/* WWDGT_CFG register value */
-#define CFG_WIN(regval)             (BITS(0,6) & ((uint32_t)(regval) << 0U))    /*!< write value to WWDGT_CFG_WIN bit field */
 
 /*!
     \brief      reset the WWDGT configuration
@@ -142,17 +137,6 @@ void wwdgt_config(uint16_t counter, uint16_t window, uint32_t prescaler)
 }
 
 /*!
-    \brief      enable early wakeup interrupt of WWDGT
-    \param[in]  none
-    \param[out] none
-    \retval     none
-*/
-void wwdgt_interrupt_enable(void)
-{
-    WWDGT_CFG |= WWDGT_CFG_EWIE;
-}
-
-/*!
     \brief      check early wakeup interrupt state of WWDGT
     \param[in]  none
     \param[out] none
@@ -176,4 +160,15 @@ FlagStatus wwdgt_flag_get(void)
 void wwdgt_flag_clear(void)
 {
     WWDGT_STAT &= ~(uint32_t)(WWDGT_STAT_EWIF);
+}
+
+/*!
+    \brief      enable early wakeup interrupt of WWDGT
+    \param[in]  none
+    \param[out] none
+    \retval     none
+*/
+void wwdgt_interrupt_enable(void)
+{
+    WWDGT_CFG |= WWDGT_CFG_EWIE;
 }
