@@ -1163,7 +1163,7 @@ uint32_t rcu_clock_freq_get(rcu_clock_freq_enum clock)
             /* calculate IRC16MDIV clock frequency */
             idx = GET_BITS(RCU_CFG2, 18, 20);
             clk_exp = IRC16M_exp[idx];
-            usart_freq = IRC16M_VALUE >> clk_exp;
+            lptimer_freq = IRC16M_VALUE >> clk_exp;
         } else {
         }
         ck_freq = lptimer_freq;
