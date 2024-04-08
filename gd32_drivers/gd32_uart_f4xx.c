@@ -19,6 +19,11 @@ __WEAK int gd32_uart_msp_deinit(sdk_uart_t *uart)
     return -SDK_ERROR;
 }
 
+__WEAK int32_t gd32_uart_write_dma(sdk_uart_t *uart, const uint8_t *data, uint32_t len)
+{
+    return -SDK_ERROR;
+}
+
 static int32_t gd32_uart_open(sdk_uart_t *uart, int32_t baudrate, int32_t data_bit, char parity, int32_t stop_bit)
 {
     // msp init
@@ -105,6 +110,18 @@ static int32_t gd32_uart_putc(sdk_uart_t *uart, int32_t ch)
     return ch;
 }
 
+int32_t gd32_uart_write(sdk_uart_t *uart, const uint8_t *data, uint32_t len)
+{
+    for(int i = 0; i < len; i++)
+    {
+        gd32_uart_putc(uart, data[i]);
+    }
+    uart->txstate = UART_TX_COMPLETE;
+    //callback
+    uart->txstate = UART_TX_IDLE;
+    return len;
+}
+
 static int32_t gd32_uart_getc(sdk_uart_t *uart)
 {
     int ch = -1;
@@ -128,6 +145,16 @@ static int32_t gd32_uart_control(sdk_uart_t *uart, int32_t cmd, void *args)
         nvic_irq_enable(uart->irq, uart->irq_prio, 0);
         /* enable interrupt */
         usart_interrupt_enable(uart->instance, USART_INT_RBNE);
+        break;
+    case SDK_CONTROL_UART_ENABLE_DMA:
+        usart_dma_receive_config(uart->instance, USART_RECEIVE_DMA_ENABLE);
+        usart_dma_transmit_config(uart->instance, USART_TRANSMIT_DMA_ENABLE);
+        uart->ops.write = gd32_uart_write_dma;
+        break;
+    case SDK_CONTROL_UART_DISABLE_DMA:
+        usart_dma_receive_config(uart->instance, USART_RECEIVE_DMA_DISABLE);
+        usart_dma_transmit_config(uart->instance, USART_TRANSMIT_DMA_DISABLE);
+        uart->ops.write = gd32_uart_write;
         break;
     default:
         return -SDK_E_INVALID;
@@ -160,6 +187,7 @@ sdk_uart_t uart0 =
     .irq_prio = 1,
     .ops.open = gd32_uart_open,
     .ops.close = gd32_uart_close,
+    .ops.write = gd32_uart_write,
     .ops.putc = gd32_uart_putc,
     .ops.getc = gd32_uart_getc,
     .ops.control = gd32_uart_control,
