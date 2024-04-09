@@ -24,6 +24,11 @@ __WEAK int32_t gd32_uart_write_dma(sdk_uart_t *uart, const uint8_t *data, uint32
     return -SDK_ERROR;
 }
 
+__WEAK int gd32_uart_update_state(sdk_uart_t *uart)
+{
+    return -SDK_ERROR;
+}
+
 static int32_t gd32_uart_open(sdk_uart_t *uart, int32_t baudrate, int32_t data_bit, char parity, int32_t stop_bit)
 {
     // msp init
@@ -155,6 +160,12 @@ static int32_t gd32_uart_control(sdk_uart_t *uart, int32_t cmd, void *args)
         usart_dma_receive_config(uart->instance, USART_RECEIVE_DMA_DISABLE);
         usart_dma_transmit_config(uart->instance, USART_TRANSMIT_DMA_DISABLE);
         uart->ops.write = gd32_uart_write;
+        break;
+    case SDK_CONTROL_UART_UPDATE_STATE:
+        if(uart->ops.write == gd32_uart_write_dma)
+        {
+            gd32_uart_update_state(uart);
+        }
         break;
     default:
         return -SDK_E_INVALID;
