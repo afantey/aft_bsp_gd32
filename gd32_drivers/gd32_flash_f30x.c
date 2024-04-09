@@ -13,11 +13,6 @@
 #define DBG_TAG "mcu.flash"
 #include "sdk_log.h"
 
-#define MCU_FLASH_START_ADRESS     ((uint32_t)0x08000000)
-#define MCU_FLASH_SIZE             (128 * 1024)
-#define MCU_FLASH_END_ADDRESS      ((uint32_t)(MCU_FLASH_START_ADRESS + MCU_FLASH_SIZE))
-#define MCU_FLASH_PAGE_SIZE        ((uint16_t)0x400)
-
 #define ALIGN_DOWN(size, align)      ((size) & ~((align) - 1))
 
 /**
