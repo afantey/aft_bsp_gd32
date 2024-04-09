@@ -172,7 +172,7 @@ sdk_err_t gd32_flash_control(sdk_flash_t *flash, int32_t cmd, void *args)
     return SDK_OK;
 }
 
-sdk_flash_t gd32f30x_onchip_flash = 
+sdk_flash_t gd32_onchip_flash = 
 {
     .ops.open = gd32_flash_open,
     .ops.close = gd32_flash_close,
