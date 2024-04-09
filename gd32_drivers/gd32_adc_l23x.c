@@ -1,10 +1,7 @@
 /**
- * Copyright (c) 2023 Infinitech Technology Co., Ltd
- * 
  * Change Logs:
- * Date           Author       Notes
- * {data}         rgw          first version
- * 2023.6.2       rgw          add adc_channel_16_to_19 enable
+ * Date           Author          Notes
+ * 2023-06-02     rgw             first version
  */
 
 #include "sdk_adc.h"

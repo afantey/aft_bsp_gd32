@@ -1,9 +1,7 @@
 /**
- * Copyright (c) 2022 Infinitech Technology Co., Ltd
- * 
  * Change Logs:
- * Date           Author       Notes
- * {data}         rgw          first version
+ * Date           Author          Notes
+ * 2023-01-10     rgw             first version
  */
 
 #ifndef __GD32_GPIO_H

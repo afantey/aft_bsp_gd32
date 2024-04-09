@@ -1,9 +1,7 @@
 /**
- * Copyright (c) 2022 Infinitech Technology Co., Ltd
- * 
  * Change Logs:
- * Date           Author       Notes
- * {data}         rgw          first version
+ * Date           Author          Notes
+ * 2022-10-21     rgw             first version
  */
 
 #ifndef __GD32_BSP_UART

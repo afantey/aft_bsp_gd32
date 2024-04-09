@@ -1,10 +1,9 @@
 /**
- * Copyright (c) 2022 Infinitech Technology Co., Ltd
- * 
  * Change Logs:
- * Date           Author       Notes
- * {data}         rgw          first version
+ * Date           Author          Notes
+ * 2023-07-21     rgw             first version
  */
+ 
 #include "sdk_board.h"
 void sdk_hw_us_delay(uint32_t us)
 {

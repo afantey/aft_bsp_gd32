@@ -1,7 +1,7 @@
 /**
  * Change Logs:
  * Date           Author          Notes
- * 2023-05-16     rgw             first version
+ * 2024-04-09     rgw             first version
  */
 
 #include "sdk_board.h"
@@ -12,6 +12,14 @@
 #include "sdk_log.h"
 
 #define ALIGN_DOWN(size, align)      ((size) & ~((align) - 1))
+
+#if !defined (MCU_FLASH_SIZE) && !defined (MCU_FLASH_PAGE_SIZE) && !defined (MCU_FLASH_START_ADRESS) && !defined (MCU_FLASH_END_ADDRESS)
+#error please define MCU_FLASH_SIZE, MCU_FLASH_PAGE_SIZE, MCU_FLASH_START_ADRESS, MCU_FLASH_END_ADDRESS in sdk_board.h
+#endif
+
+#if !defined (SOC_CHIP_GD32F470) && !defined (SOC_CHIP_GD32F427) && !defined (SOC_CHIP_GD32F425)
+#error 4K Page size is not supported by this chip
+#endif
 
 /**
   * @brief  Gets the page of a given address
@@ -75,12 +83,11 @@ int32_t gd32_flash_write(sdk_flash_t *flash, uint32_t addr, const uint8_t *buf, 
 
     sdk_hw_interrupt_disable();
     fmc_unlock();
+    fmc_flag_clear(FMC_FLAG_END | FMC_FLAG_OPERR | FMC_FLAG_WPERR | FMC_FLAG_PGMERR | FMC_FLAG_PGSERR);
 
     while (addr < end_addr)
     {
         fmc_state = fmc_word_program(addr, *((uint32_t *)buf));
-        /* clear all pending flags */
-        fmc_flag_clear(FMC_FLAG_END | FMC_FLAG_WPERR | FMC_FLAG_PGAERR | FMC_FLAG_PGERR);
         if(fmc_state == FMC_READY)
         {
             if (*(uint32_t *)addr != *(uint32_t *)buf)
@@ -129,15 +136,11 @@ sdk_err_t gd32_flash_erase(sdk_flash_t *flash, uint32_t addr, size_t size)
     uint32_t PageAddress = GetPage(addr);
     fmc_state_enum fmc_state = FMC_READY;
 
-    /* clear all pending flags */
-    fmc_flag_clear(FMC_FLAG_END | FMC_FLAG_WPERR | FMC_FLAG_PGAERR | FMC_FLAG_PGERR);
-
     /* Erase page by page to be done*/
     for (address = PageAddress; address < ((NbPages * MCU_FLASH_PAGE_SIZE) + PageAddress); address += MCU_FLASH_PAGE_SIZE)
     {
+        fmc_flag_clear(FMC_FLAG_END | FMC_FLAG_OPERR | FMC_FLAG_WPERR | FMC_FLAG_PGMERR | FMC_FLAG_PGSERR);
         fmc_state = fmc_page_erase(address);
-        /* clear all pending flags */
-        fmc_flag_clear(FMC_FLAG_END | FMC_FLAG_WPERR | FMC_FLAG_PGAERR | FMC_FLAG_PGERR);
         if(fmc_state != FMC_READY)
         {
             result = -SDK_ERROR;
@@ -169,7 +172,7 @@ sdk_err_t gd32_flash_control(sdk_flash_t *flash, int32_t cmd, void *args)
     return SDK_OK;
 }
 
-sdk_flash_t gd32_onchip_flash = 
+sdk_flash_t gd32f30x_onchip_flash = 
 {
     .ops.open = gd32_flash_open,
     .ops.close = gd32_flash_close,

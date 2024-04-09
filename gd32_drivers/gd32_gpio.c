@@ -1,11 +1,9 @@
 /**
- * Copyright (c) 2022 Infinitech Technology Co., Ltd
- * 
  * Change Logs:
- * Date           Author       Notes
- * {data}         rgw          first version
+ * Date           Author          Notes
+ * 2023-01-30     rgw             first version
  */
-
+ 
 #include "sdk_gpio.h"
 #include "dhs_sdk.h"
 #include "board.h"
