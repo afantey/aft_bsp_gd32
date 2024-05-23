@@ -20,24 +20,90 @@ __WEAK int gd32_uart_msp_deinit(sdk_uart_t *uart)
     return -SDK_ERROR;
 }
 
-__WEAK int32_t gd32_uart_write_dma(sdk_uart_t *uart, const uint8_t *data, uint32_t len)
+static int32_t gd32_uart_write_dma(sdk_uart_t *uart, const uint8_t *data, uint32_t len)
 {
-    return -SDK_ERROR;
+    if(len > uart->dma_config->tx_dma_buffer_size)
+        return -1;
+    
+    memcpy(uart->dma_config->tx_dma_buffer, data, len);
+    /* enable DMAx clock */
+    rcu_periph_clock_enable(uart->dma_config->clock);
+
+    dma_single_data_parameter_struct dma_init_struct;
+
+    /* deinitialize DMAx channelx(USART TX) */
+    dma_single_data_para_struct_init(&dma_init_struct);
+    dma_deinit(uart->dma_config->dma_instance, uart->dma_config->tx_dma_channel);
+    dma_init_struct.direction = DMA_MEMORY_TO_PERIPH;
+    dma_init_struct.memory0_addr = (uint32_t)uart->dma_config->tx_dma_buffer;
+    dma_init_struct.memory_inc = DMA_MEMORY_INCREASE_ENABLE;
+    dma_init_struct.periph_memory_width = DMA_PERIPH_WIDTH_8BIT;
+    dma_init_struct.number = len;
+    dma_init_struct.periph_addr = (uint32_t)&USART_DATA(uart->instance);
+    dma_init_struct.periph_inc = DMA_PERIPH_INCREASE_DISABLE;
+    dma_init_struct.priority = DMA_PRIORITY_ULTRA_HIGH;
+    dma_single_data_mode_init(uart->dma_config->dma_instance, uart->dma_config->tx_dma_channel, &dma_init_struct);
+
+    /* configure DMA mode */
+    dma_circulation_disable(uart->dma_config->dma_instance, uart->dma_config->tx_dma_channel);
+    dma_channel_subperipheral_select(uart->dma_config->dma_instance, uart->dma_config->tx_dma_channel, uart->dma_config->tx_dma_channel_subperipheral);
+    /* enable DMAx channel7 transfer complete interrupt */
+    // dma_interrupt_enable(DMAx, DMA_CH3, DMA_CHXCTL_FTFIE);
+    /* enable DMAx channel7 */
+    dma_channel_enable(uart->dma_config->dma_instance, uart->dma_config->tx_dma_channel);
+
+
+    // nvic_irq_enable(DMAx_Channel2_IRQn, 0, 1);
+    return SDK_OK;
 }
 
-__WEAK int32_t gd32_uart_read_dma_config(sdk_uart_t *uart)
+static int32_t gd32_uart_rx_dma_config(sdk_uart_t *uart)
 {
-    return -SDK_ERROR;
+    dma_single_data_parameter_struct dma_init_struct;
+    
+    rcu_periph_clock_enable(uart->dma_config->clock);
+
+    nvic_irq_enable(uart->dma_config->rx_dma_irq, uart->dma_config->rx_dma_irq_prio, 1);
+    
+    dma_deinit(uart->dma_config->dma_instance, uart->dma_config->rx_dma_channel);
+    dma_init_struct.direction = DMA_PERIPH_TO_MEMORY;
+    dma_init_struct.memory0_addr = (uint32_t)uart->dma_config->rx_dma_buffer;
+    dma_init_struct.memory_inc = DMA_MEMORY_INCREASE_ENABLE;
+    dma_init_struct.number = uart->dma_config->rx_dma_buffer_size;
+    dma_init_struct.periph_addr = (uint32_t)&USART_DATA(uart->instance);
+    dma_init_struct.periph_inc = DMA_PERIPH_INCREASE_DISABLE;
+    dma_init_struct.periph_memory_width = DMA_PERIPH_WIDTH_8BIT;
+    dma_init_struct.priority = DMA_PRIORITY_ULTRA_HIGH;
+    dma_single_data_mode_init(uart->dma_config->dma_instance, uart->dma_config->rx_dma_channel, &dma_init_struct);
+    
+    /* configure DMA mode */
+    // dma_circulation_disable(DMAx, DMA_CHx);
+    dma_circulation_enable(uart->dma_config->dma_instance, uart->dma_config->rx_dma_channel);
+    dma_channel_subperipheral_select(uart->dma_config->dma_instance, uart->dma_config->rx_dma_channel, uart->dma_config->rx_dma_channel_subperipheral);
+
+    dma_interrupt_enable(uart->dma_config->dma_instance, uart->dma_config->rx_dma_channel, DMA_INT_HTF);
+    dma_interrupt_enable(uart->dma_config->dma_instance, uart->dma_config->rx_dma_channel, DMA_INT_FTF);
+
+    /* enable DMAx channel2 */
+    dma_channel_enable(uart->dma_config->dma_instance, uart->dma_config->rx_dma_channel);
+    return SDK_OK;
 }
 
-__WEAK int32_t gd32_uart_get_dma_cnt(sdk_uart_t *uart)
+static int32_t gd32_uart_get_dma_cnt(sdk_uart_t *uart)
 {
-    return -SDK_ERROR;
+    return dma_transfer_number_get(uart->dma_config->dma_instance, uart->dma_config->rx_dma_channel);
 }
 
-__WEAK int gd32_uart_update_state(sdk_uart_t *uart)
+static int gd32_uart_update_state(sdk_uart_t *uart)
 {
-    return -SDK_ERROR;
+    if (dma_flag_get(uart->dma_config->dma_instance, uart->dma_config->tx_dma_channel, DMA_FLAG_FTF) == SET)
+    {
+        dma_flag_clear(uart->dma_config->dma_instance, uart->dma_config->tx_dma_channel, DMA_FLAG_FTF);
+        uart->txstate = UART_TX_COMPLETE;
+        // do something
+        uart->txstate = UART_TX_IDLE;
+    }
+    return SDK_OK;
 }
 
 static int32_t gd32_uart_open(sdk_uart_t *uart, int32_t baudrate, int32_t data_bit, char parity, int32_t stop_bit)
@@ -48,20 +114,8 @@ static int32_t gd32_uart_open(sdk_uart_t *uart, int32_t baudrate, int32_t data_b
         return -SDK_ERROR;
     }
 
-    if(uart->instance == USART0)
-    {
-        /* enable USART clock */
-        rcu_periph_clock_enable(RCU_USART0);
-    }
-    else if(uart->instance == USART2)
-    {
-        /* enable USART clock */
-        rcu_periph_clock_enable(RCU_USART2);
-    }
-    else
-    {
-        return -SDK_ERROR;
-    }
+    /* enable USART clock */
+    rcu_periph_clock_enable(uart->clock);
 
     /* USART configure */
     usart_deinit((uint32_t)uart->instance);
@@ -177,7 +231,7 @@ static int32_t gd32_uart_control(sdk_uart_t *uart, int32_t cmd, void *args)
     case SDK_CONTROL_UART_ENABLE_DMA:
         usart_dma_receive_config(uart->instance, USART_RECEIVE_DMA_ENABLE);
         usart_dma_transmit_config(uart->instance, USART_TRANSMIT_DMA_ENABLE);
-        gd32_uart_read_dma_config(uart);
+        gd32_uart_rx_dma_config(uart);
         uart->ops.write = gd32_uart_write_dma;
         break;
     case SDK_CONTROL_UART_DISABLE_DMA:
@@ -215,60 +269,118 @@ void USART0_IRQHandler(void)
         usart_flag_clear(uart0.instance, USART_FLAG_ORERR);
     }
 }
-extern uint8_t uart2rxbuffer[256];
 void USART2_IRQHandler(void)
 {
-    if ((usart_interrupt_flag_get(uart2.instance, USART_INT_FLAG_RBNE) != RESET) &&
-        (usart_flag_get(uart2.instance, USART_FLAG_RBNE) != RESET))
+    sdk_uart_t *uart = &uart2;
+
+    if ((usart_interrupt_flag_get(uart->instance, USART_INT_FLAG_RBNE) != RESET) &&
+        (usart_flag_get(uart->instance, USART_FLAG_RBNE) != RESET))
     {
-        sdk_uart_rx_isr(&uart2);
-        usart_flag_clear(uart2.instance, USART_FLAG_RBNE);
+        sdk_uart_rx_isr(uart);
+        usart_flag_clear(uart->instance, USART_FLAG_RBNE);
     }
-    if (usart_flag_get(uart2.instance, USART_FLAG_ORERR) != RESET)
+    if (usart_flag_get(uart->instance, USART_FLAG_ORERR) != RESET)
     {
-        usart_flag_clear(uart2.instance, USART_FLAG_ORERR);
+        usart_flag_clear(uart->instance, USART_FLAG_ORERR);
     }
 
-    if (usart_interrupt_flag_get(uart2.instance, USART_INT_FLAG_IDLE) != RESET)
+    if (usart_interrupt_flag_get(uart->instance, USART_INT_FLAG_IDLE) != RESET)
     {
         /* clear IDLE flag */
-        usart_data_receive(uart2.instance);
+        usart_data_receive(uart->instance);
 
         /* number of data received */
-        uint32_t rx_count = sizeof(uart2rxbuffer) - (dma_transfer_number_get(DMA0, DMA_CH1));
+        uint32_t rx_count = uart->dma_config->rx_dma_buffer_size - (dma_transfer_number_get(uart->dma_config->dma_instance, uart->dma_config->rx_dma_channel));
 
-        if (rx_count < sizeof(uart2rxbuffer) / 2) // 半满中断前
+        if (rx_count < uart->dma_config->rx_dma_buffer_size / 2) // 半满中断前
         {
             for (int i = 0; i < rx_count; i++)
             {
-                sdk_uart_rx_getc(&uart2, uart2rxbuffer[i]);
+                sdk_uart_rx_getc(uart, uart->dma_config->rx_dma_buffer[i]);
             }
         }
-        else if (rx_count == sizeof(uart2rxbuffer) / 2)
+        else if (rx_count == uart->dma_config->rx_dma_buffer_size / 2)
         {
         }
-        else if (rx_count > sizeof(uart2rxbuffer) / 2 && rx_count < sizeof(uart2rxbuffer))
+        else if (rx_count > uart->dma_config->rx_dma_buffer_size / 2 && rx_count < uart->dma_config->rx_dma_buffer_size)
         {
-            for (int i = sizeof(uart2rxbuffer) / 2; i < rx_count; i++)
+            for (int i = uart->dma_config->rx_dma_buffer_size / 2; i < rx_count; i++)
             {
-                sdk_uart_rx_getc(&uart2, uart2rxbuffer[i]);
+                sdk_uart_rx_getc(uart, uart->dma_config->rx_dma_buffer[i]);
             }
         }
         else
         {
         }
-        uart2.rxstate = UART_RX_COMPLETE;
-        dma_channel_disable(DMA0, DMA_CH1); //disable时会产生一个满中断
-        dma_flag_clear(DMA0, DMA_CH1, DMA_FLAG_HTF);
-        dma_flag_clear(DMA0, DMA_CH1, DMA_FLAG_FTF);
-        dma_transfer_number_config(DMA0, DMA_CH1, sizeof(uart2rxbuffer));
-        dma_channel_enable(DMA0, DMA_CH1);
+        uart->rxstate = UART_RX_COMPLETE;
+        dma_channel_disable(uart->dma_config->dma_instance, uart->dma_config->rx_dma_channel); //disable时会产生一个满中断
+        dma_flag_clear(uart->dma_config->dma_instance, uart->dma_config->rx_dma_channel, DMA_FLAG_HTF);
+        dma_flag_clear(uart->dma_config->dma_instance, uart->dma_config->rx_dma_channel, DMA_FLAG_FTF);
+        dma_transfer_number_config(uart->dma_config->dma_instance, uart->dma_config->rx_dma_channel, uart->dma_config->rx_dma_buffer_size);
+        dma_channel_enable(uart->dma_config->dma_instance, uart->dma_config->rx_dma_channel);
     }
 }
 
-sdk_uart_t uart0 = 
+void DMA0_Channel1_IRQHandler(void)
 {
+    sdk_uart_t *uart = &uart2;
+
+    uint32_t dma_cnt = dma_transfer_number_get(uart->dma_config->dma_instance, uart->dma_config->rx_dma_channel);
+
+    // 半满中断
+    if (dma_interrupt_flag_get(uart->dma_config->dma_instance, uart->dma_config->rx_dma_channel, DMA_INT_FLAG_HTF))
+    {
+        dma_interrupt_flag_clear(uart->dma_config->dma_instance, uart->dma_config->rx_dma_channel, DMA_INT_FLAG_HTF);
+        for (int i = 0; i < uart->dma_config->rx_dma_buffer_size - dma_cnt; i++)
+        {
+            sdk_uart_rx_getc(uart, uart->dma_config->rx_dma_buffer[i]);
+        }
+    }
+    // 满中断
+    if (dma_interrupt_flag_get(uart->dma_config->dma_instance, uart->dma_config->rx_dma_channel, DMA_INT_FLAG_FTF))
+    {
+        dma_interrupt_flag_clear(uart->dma_config->dma_instance, uart->dma_config->rx_dma_channel, DMA_INT_FLAG_FTF);
+        if(uart->rxstate == UART_RX_COMPLETE)
+        {
+            uart->rxstate = UART_RX_IDLE;
+        }
+        else
+        {
+            for (int i = uart->dma_config->rx_dma_buffer_size / 2; i < uart->dma_config->rx_dma_buffer_size; i++)
+            {
+                sdk_uart_rx_getc(uart, uart->dma_config->rx_dma_buffer[i]);
+            }
+        }
+    }
+}
+
+
+#define UART2_TX_DMA_BUFFER_SIZE 512
+#define UART2_RX_DMA_BUFFER_SIZE 256
+static uint8_t uart2txbuffer[UART2_TX_DMA_BUFFER_SIZE] = {0};
+static uint8_t uart2rxbuffer[UART2_RX_DMA_BUFFER_SIZE] = {0};
+
+static struct sdk_uart_dma_config uart2_dma_config = 
+{
+    .dma_instance = DMA0,
+    .clock = RCU_DMA0,
+
+    .tx_dma_channel = DMA_CH3,
+    .tx_dma_channel_subperipheral = DMA_SUBPERI4,
+    .tx_dma_buffer = uart2txbuffer,
+    .tx_dma_buffer_size = sizeof(uart2txbuffer),
+
+    .rx_dma_channel = DMA_CH1,
+    .rx_dma_channel_subperipheral = DMA_SUBPERI4,
+    .rx_dma_buffer = uart2rxbuffer,
+    .rx_dma_buffer_size = sizeof(uart2rxbuffer),
+    .rx_dma_irq = DMA0_Channel1_IRQn,
+    .rx_dma_irq_prio = 0,
+};
+
+sdk_uart_t uart0 = {
     .instance = USART0,
+    .clock = RCU_USART0,
     .irq = USART0_IRQn,
     .irq_prio = 1,
     .ops.open = gd32_uart_open,
@@ -282,9 +394,9 @@ sdk_uart_t uart0 =
     .rx_rto_callback = NULL,
 };
 
-sdk_uart_t uart2 = 
-{
+sdk_uart_t uart2 = {
     .instance = USART2,
+    .clock = RCU_USART2,
     .irq = USART2_IRQn,
     .irq_prio = 1,
     .ops.open = gd32_uart_open,
@@ -296,4 +408,5 @@ sdk_uart_t uart2 =
     .rx_callback = NULL,
     .rx_idle_callback = NULL,
     .rx_rto_callback = NULL,
+    .dma_config = &uart2_dma_config,
 };
