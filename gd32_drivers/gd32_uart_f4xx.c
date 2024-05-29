@@ -8,7 +8,9 @@
 #include "sdk_uart.h"
 
 extern sdk_uart_t uart0;
+extern sdk_uart_t uart1;
 extern sdk_uart_t uart2;
+extern sdk_uart_t uart6;
 
 __WEAK int gd32_uart_msp_init(sdk_uart_t *uart)
 {
@@ -216,11 +218,17 @@ static int32_t gd32_uart_control(sdk_uart_t *uart, int32_t cmd, void *args)
         usart_interrupt_disable(uart->instance, USART_INT_RBNE);
         break;
     case SDK_CONTROL_UART_ENABLE_INT:
-        /* enable rx irq */
-        nvic_irq_enable(uart->irq, uart->irq_prio, 0);
-        /* enable interrupt */
-        usart_interrupt_enable(uart->instance, USART_INT_RBNE);
-        break;
+    {
+        char *flag = (char *)args;
+        if(args == NULL || (strchr(flag, 'r') != NULL))
+        {
+            /* enable rx irq */
+            nvic_irq_enable(uart->irq, uart->irq_prio, 0);
+            /* enable interrupt */
+            usart_interrupt_enable(uart->instance, USART_INT_RBNE);
+            break;
+        }
+    }
     case SDK_CONTROL_UART_INT_IDLE_ENABLE:
         nvic_irq_enable(uart->irq, uart->irq_prio, 0);
         usart_interrupt_enable(uart->instance, USART_INT_IDLE);
@@ -229,11 +237,30 @@ static int32_t gd32_uart_control(sdk_uart_t *uart, int32_t cmd, void *args)
         usart_interrupt_disable(uart->instance, USART_INT_IDLE);
         break;
     case SDK_CONTROL_UART_ENABLE_DMA:
-        usart_dma_receive_config(uart->instance, USART_RECEIVE_DMA_ENABLE);
-        usart_dma_transmit_config(uart->instance, USART_TRANSMIT_DMA_ENABLE);
-        gd32_uart_rx_dma_config(uart);
-        uart->ops.write = gd32_uart_write_dma;
+    {
+        if(args == NULL)
+        {
+            usart_dma_receive_config(uart->instance, USART_RECEIVE_DMA_ENABLE);
+            gd32_uart_rx_dma_config(uart);
+            usart_dma_transmit_config(uart->instance, USART_TRANSMIT_DMA_ENABLE);
+            uart->ops.write = gd32_uart_write_dma;
+        }
+        else 
+        {
+            char *flag = (char *)args;
+            if (strchr(flag, 'r') != NULL)
+            {
+                usart_dma_receive_config(uart->instance, USART_RECEIVE_DMA_ENABLE);
+                gd32_uart_rx_dma_config(uart);
+            }
+            if (strchr(flag, 'w') != NULL)
+            {
+                usart_dma_transmit_config(uart->instance, USART_TRANSMIT_DMA_ENABLE);
+                uart->ops.write = gd32_uart_write_dma;
+            }
+        }
         break;
+    }
     case SDK_CONTROL_UART_DISABLE_DMA:
         usart_dma_receive_config(uart->instance, USART_RECEIVE_DMA_DISABLE);
         usart_dma_transmit_config(uart->instance, USART_TRANSMIT_DMA_DISABLE);
@@ -269,10 +296,9 @@ void USART0_IRQHandler(void)
         usart_flag_clear(uart0.instance, USART_FLAG_ORERR);
     }
 }
-void USART2_IRQHandler(void)
-{
-    sdk_uart_t *uart = &uart2;
 
+void _uart_isr(sdk_uart_t *uart)
+{
     if ((usart_interrupt_flag_get(uart->instance, USART_INT_FLAG_RBNE) != RESET) &&
         (usart_flag_get(uart->instance, USART_FLAG_RBNE) != RESET))
     {
@@ -321,10 +347,8 @@ void USART2_IRQHandler(void)
     }
 }
 
-void DMA0_Channel1_IRQHandler(void)
+static void _dma_channel_isr(sdk_uart_t *uart)
 {
-    sdk_uart_t *uart = &uart2;
-
     uint32_t dma_cnt = dma_transfer_number_get(uart->dma_config->dma_instance, uart->dma_config->rx_dma_channel);
 
     // 半满中断
@@ -354,29 +378,109 @@ void DMA0_Channel1_IRQHandler(void)
     }
 }
 
+void USART1_IRQHandler(void)
+{
+    _uart_isr(&uart1);
+}
 
-#define UART2_TX_DMA_BUFFER_SIZE 512
-#define UART2_RX_DMA_BUFFER_SIZE 256
+void USART2_IRQHandler(void)
+{
+   _uart_isr(&uart2);
+}
+
+void UART6_IRQHandler(void)
+{
+   _uart_isr(&uart6);
+}
+
+void DMA0_Channel1_IRQHandler(void)
+{
+   _dma_channel_isr(&uart2);
+}
+
+void DMA0_Channel3_IRQHandler(void)
+{
+    _dma_channel_isr(&uart6);
+}
+
+void DMA0_Channel5_IRQHandler(void)
+{
+    _dma_channel_isr(&uart1);
+}
+
+#define UART1_TX_DMA_BUFFER_SIZE 512
+#define UART1_RX_DMA_BUFFER_SIZE 256
+static uint8_t uart1txbuffer[UART1_TX_DMA_BUFFER_SIZE] = {0};
+static uint8_t uart1rxbuffer[UART1_RX_DMA_BUFFER_SIZE] = {0};
+
+static struct sdk_uart_dma_config uart1_dma_config = 
+{
+    .dma_instance = DMA0,
+    .clock = RCU_DMA0,
+
+    .tx_dma_channel = DMA_CH6,
+    .tx_dma_channel_subperipheral = DMA_SUBPERI4,
+    .tx_dma_buffer = uart1txbuffer,
+    .tx_dma_buffer_size = sizeof(uart1txbuffer),
+
+    .rx_dma_channel = DMA_CH5,
+    .rx_dma_channel_subperipheral = DMA_SUBPERI4,
+    .rx_dma_buffer = uart1rxbuffer,
+    .rx_dma_buffer_size = sizeof(uart1rxbuffer),
+    .rx_dma_irq = DMA0_Channel5_IRQn,
+    .rx_dma_irq_prio = 0,
+};
+
+#define UART2_TX_DMA_BUFFER_SIZE 256
 static uint8_t uart2txbuffer[UART2_TX_DMA_BUFFER_SIZE] = {0};
+#if 0
+#define UART2_RX_DMA_BUFFER_SIZE 256
 static uint8_t uart2rxbuffer[UART2_RX_DMA_BUFFER_SIZE] = {0};
+#endif
 
 static struct sdk_uart_dma_config uart2_dma_config = 
 {
     .dma_instance = DMA0,
     .clock = RCU_DMA0,
 
-    .tx_dma_channel = DMA_CH3,
-    .tx_dma_channel_subperipheral = DMA_SUBPERI4,
+    .tx_dma_channel = DMA_CH4,
+    .tx_dma_channel_subperipheral = DMA_SUBPERI7,
     .tx_dma_buffer = uart2txbuffer,
     .tx_dma_buffer_size = sizeof(uart2txbuffer),
 
+#if 0
     .rx_dma_channel = DMA_CH1,
     .rx_dma_channel_subperipheral = DMA_SUBPERI4,
     .rx_dma_buffer = uart2rxbuffer,
     .rx_dma_buffer_size = sizeof(uart2rxbuffer),
     .rx_dma_irq = DMA0_Channel1_IRQn,
     .rx_dma_irq_prio = 0,
+#endif
 };
+
+// #define UART6_TX_DMA_BUFFER_SIZE 512
+// static uint8_t uart6txbuffer[UART6_TX_DMA_BUFFER_SIZE] = {0};
+#define UART6_RX_DMA_BUFFER_SIZE 512
+static uint8_t uart6rxbuffer[UART6_RX_DMA_BUFFER_SIZE] = {0};
+
+static struct sdk_uart_dma_config uart6_dma_config = 
+{
+    .dma_instance = DMA0,
+    .clock = RCU_DMA0,
+#if 0
+    .tx_dma_channel = DMA_CH4,
+    .tx_dma_channel_subperipheral = DMA_SUBPERI7,
+    .tx_dma_buffer = uart2txbuffer,
+    .tx_dma_buffer_size = sizeof(uart2txbuffer),
+#endif
+    .rx_dma_channel = DMA_CH3,
+    .rx_dma_channel_subperipheral = DMA_SUBPERI5,
+    .rx_dma_buffer = uart6rxbuffer,
+    .rx_dma_buffer_size = sizeof(uart6rxbuffer),
+    .rx_dma_irq = DMA0_Channel3_IRQn,
+    .rx_dma_irq_prio = 0,
+};
+
 
 sdk_uart_t uart0 = {
     .instance = USART0,
@@ -394,6 +498,23 @@ sdk_uart_t uart0 = {
     .rx_rto_callback = NULL,
 };
 
+sdk_uart_t uart1 = {
+    .instance = USART1,
+    .clock = RCU_USART1,
+    .irq = USART1_IRQn,
+    .irq_prio = 1,
+    .ops.open = gd32_uart_open,
+    .ops.close = gd32_uart_close,
+    .ops.write = gd32_uart_write,
+    .ops.putc = gd32_uart_putc,
+    .ops.getc = gd32_uart_getc,
+    .ops.control = gd32_uart_control,
+    .rx_callback = NULL,
+    .rx_idle_callback = NULL,
+    .rx_rto_callback = NULL,
+    .dma_config = &uart1_dma_config,
+};
+
 sdk_uart_t uart2 = {
     .instance = USART2,
     .clock = RCU_USART2,
@@ -409,4 +530,21 @@ sdk_uart_t uart2 = {
     .rx_idle_callback = NULL,
     .rx_rto_callback = NULL,
     .dma_config = &uart2_dma_config,
+};
+
+sdk_uart_t uart6 = {
+    .instance = UART6,
+    .clock = RCU_UART6,
+    .irq = UART6_IRQn,
+    .irq_prio = 1,
+    .ops.open = gd32_uart_open,
+    .ops.close = gd32_uart_close,
+    .ops.write = gd32_uart_write,
+    .ops.putc = gd32_uart_putc,
+    .ops.getc = gd32_uart_getc,
+    .ops.control = gd32_uart_control,
+    .rx_callback = NULL,
+    .rx_idle_callback = NULL,
+    .rx_rto_callback = NULL,
+    .dma_config = &uart6_dma_config,
 };
