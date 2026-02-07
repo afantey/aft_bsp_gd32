@@ -1,11 +1,9 @@
 /**
- * Copyright (c) 2022 Infinitech Technology Co., Ltd
- * 
  * Change Logs:
- * Date           Author       Notes
- * {data}         rgw          first version
+ * Date           Author          Notes
+ * 2023-06-20     rgw             first version
  */
-
+ 
 #include "sdk_board.h"
 #include "sdk_uart.h"
 
